@@ -2,8 +2,12 @@ name: Hamburg Elbe Radar
 
 on:
   schedule:
-    - cron: '*/15 * * * *' # Prüft alle 15 Minuten die Elbe
+    - cron: '*/5 * * * *' # Prüft alle 5 Minuten die Elbe
   workflow_dispatch:
+
+concurrency:
+  group: hamburg-elbe-scan
+  cancel-in-progress: false
 
 jobs:
   scan:
