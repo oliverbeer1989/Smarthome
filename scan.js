@@ -3,7 +3,7 @@ const WebSocket = require('ws');
 const API_KEY = (process.env.AIS_API_KEY || '').trim();
 const WORKER_URL = 'https://hamburg-schiffe.oliver-beer1989.workers.dev/update';
 const UPLOAD_SECRET = process.env.UPLOAD_SECRET || 'aida-geheim-2026';
-const GESAMT_ZEIT_MS = 210000; // 3,5 Minuten (erwischt Schiffsdaten sicher!)
+const GESAMT_ZEIT_MS = 390000; // 6,5 Minuten -> erwischt garantiert das 6-Minuten-Längenpaket!
 
 function verbindeEinmal(restZeitMs, schiffe) {
   return new Promise((resolve) => {
@@ -14,7 +14,6 @@ function verbindeEinmal(restZeitMs, schiffe) {
     }, restZeitMs);
 
     ws.on('open', () => {
-      // Elbe von Cuxhaven/Brunsbüttel bis Hamburger Hafen
       ws.send(JSON.stringify({
         APIKey: API_KEY,
         BoundingBoxes: [[[53.48, 8.65], [53.92, 10.12]]],
@@ -80,6 +79,8 @@ async function run() {
   const schiffe = new Map();
   const ende = Date.now() + GESAMT_ZEIT_MS;
 
+  console.log('Starte 6,5-Minuten-Elbe-Scan...');
+
   while (Date.now() < ende) {
     const rest = ende - Date.now();
     if (rest <= 2000) break;
@@ -95,15 +96,12 @@ async function run() {
   });
 
   for (const s of schiffe.values()) {
-    if (s.sog === null || s.sog < 3.0 || s.cog === null) continue;
+    if (s.sog === null || s.sog < 2.0 || s.cog === null) continue;
 
     let richtung = '';
-    // Einlaufend Richtung Hamburg (Kurs 65° bis 170°, westlich vom Hafen)
     if (s.cog >= 65 && s.cog <= 170 && s.lon < 9.95) {
       richtung = 'EINLAUFEND';
-    }
-    // Auslaufend aus Hamburg Richtung Nordsee (Kurs 225° bis 345° abgedeckt!)
-    else if (s.cog >= 225 && s.cog <= 345) {
+    } else if (s.cog >= 225 && s.cog <= 345) {
       richtung = 'AUSLAUFEND';
     }
 
@@ -121,19 +119,17 @@ async function run() {
     }
   }
 
-  console.log('Gescannte fahrende Schiffe:', treffer.length);
+  console.log('Alle erfassten Schiffe (ab 100m):', treffer.filter((x) => x.laenge >= 100 || x.laenge === 0));
 
-  if (treffer.length > 0) {
-    const res = await fetch(WORKER_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${UPLOAD_SECRET}`
-      },
-      body: JSON.stringify(treffer)
-    });
-    console.log('Worker-Antwort:', await res.text());
-  }
+  const res = await fetch(WORKER_URL, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${UPLOAD_SECRET}`
+    },
+    body: JSON.stringify(treffer)
+  });
+  console.log('Worker-Antwort:', await res.text());
 }
 
 run();
