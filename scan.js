@@ -49,8 +49,8 @@ function verbindeEinmal(restZeitMs, schiffe) {
           const p = msg.Message.PositionReport;
           eintrag.sog = p.Sog ?? eintrag.sog;
           eintrag.cog = p.Cog ?? eintrag.cog;
-          eintrag.lat = p.Latitude ?? eintrag.lat;
-          eintrag.lon = p.Longitude ?? eintrag.lon;
+          if (p.Latitude) eintrag.lat = p.Latitude;
+          if (p.Longitude) eintrag.lon = p.Longitude;
         }
 
         if (msg.Message?.ShipStaticData) {
@@ -94,12 +94,18 @@ async function run() {
   });
 
   for (const s of schiffe.values()) {
-    if (s.sog === null || s.sog < 2.0 || s.cog === null) continue;
+    // Schon ab 1.5 Knoten erfassen (wichtig beim Ablegen im Hafen)
+    if (s.sog === null || s.sog < 1.5 || s.cog === null) continue;
 
     let richtung = '';
-    if (s.cog >= 65 && s.cog <= 170 && s.lon < 9.95) {
+    const imHafenBereich = s.lon !== null && s.lon >= 9.85;
+
+    // Einlaufend Richtung Hamburg (Ost / Südost)
+    if (s.cog >= 65 && s.cog <= 170 && (s.lon === null || s.lon < 9.98)) {
       richtung = 'EINLAUFEND';
-    } else if (s.cog >= 225 && s.cog <= 345) {
+    } 
+    // Auslaufend: Elbabwärts (225°-345°) ODER Ausfahrt aus Hafenbecken/Steinwerder nach Norden (345°-25°)
+    else if ((s.cog >= 225 && s.cog <= 360) || (imHafenBereich && s.cog >= 0 && s.cog <= 25)) {
       richtung = 'AUSLAUFEND';
     }
 
@@ -118,6 +124,8 @@ async function run() {
       });
     }
   }
+
+  console.log(`Empfangene Schiffe gesamt: ${schiffe.size}, davon in Bewegung/Richtung: ${treffer.length}`);
 
   const res = await fetch(WORKER_URL, {
     method: 'POST',
