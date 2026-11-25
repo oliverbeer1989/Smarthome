@@ -3,7 +3,7 @@ const WebSocket = require('ws');
 const API_KEY = (process.env.AIS_API_KEY || '').trim();
 const WORKER_URL = 'https://hamburg-schiffe.oliver-beer1989.workers.dev/update';
 const UPLOAD_SECRET = process.env.UPLOAD_SECRET || 'aida-geheim-2026';
-const GESAMT_ZEIT_MS = 390000; // 6,5 Minuten -> erwischt garantiert das 6-Minuten-Längenpaket!
+const GESAMT_ZEIT_MS = 390000;
 
 function verbindeEinmal(restZeitMs, schiffe) {
   return new Promise((resolve) => {
@@ -79,8 +79,6 @@ async function run() {
   const schiffe = new Map();
   const ende = Date.now() + GESAMT_ZEIT_MS;
 
-  console.log('Starte 6,5-Minuten-Elbe-Scan...');
-
   while (Date.now() < ende) {
     const rest = ende - Date.now();
     if (rest <= 2000) break;
@@ -112,14 +110,14 @@ async function run() {
         laenge: s.laenge,
         typ: s.typ,
         sog: s.sog,
+        lat: s.lat,
+        lon: s.lon,
         richtung,
         ziel: s.ziel,
         zeit
       });
     }
   }
-
-  console.log('Alle erfassten Schiffe (ab 100m):', treffer.filter((x) => x.laenge >= 100 || x.laenge === 0));
 
   const res = await fetch(WORKER_URL, {
     method: 'POST',
