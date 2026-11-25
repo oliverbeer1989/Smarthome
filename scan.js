@@ -3,7 +3,7 @@ const WebSocket = require('ws');
 const API_KEY = (process.env.AIS_API_KEY || '').trim();
 const WORKER_URL = 'https://hamburg-schiffe.oliver-beer1989.workers.dev/update';
 const UPLOAD_SECRET = process.env.UPLOAD_SECRET || 'aida-geheim-2026';
-const GESAMT_ZEIT_MS = 390000;
+const GESAMT_ZEIT_MS = 210000;
 
 function verbindeEinmal(restZeitMs, schiffe) {
   return new Promise((resolve) => {
