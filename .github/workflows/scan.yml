@@ -1,0 +1,19 @@
+name: Hamburg Elbe Radar
+
+on:
+  schedule:
+    - cron: '*/15 * * * *' # Prüft alle 15 Minuten die Elbe
+  workflow_dispatch:
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: npm install ws
+      - run: node scan.js
+        env:
+          AIS_API_KEY: ${{ secrets.AIS_API_KEY }}
