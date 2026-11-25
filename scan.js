@@ -3,7 +3,7 @@ const WebSocket = require('ws');
 const API_KEY = (process.env.AIS_API_KEY || '').trim();
 const WORKER_URL = 'https://hamburg-schiffe.oliver-beer1989.workers.dev/update';
 const UPLOAD_SECRET = process.env.UPLOAD_SECRET || 'aida-geheim-2026';
-const GESAMT_ZEIT_MS = 120000; // 2 Minuten lauschen
+const GESAMT_ZEIT_MS = 210000; // 3,5 Minuten (erwischt Schiffsdaten sicher!)
 
 function verbindeEinmal(restZeitMs, schiffe) {
   return new Promise((resolve) => {
@@ -95,20 +95,15 @@ async function run() {
   });
 
   for (const s of schiffe.values()) {
-    const istKreuzfahrer = s.typ >= 60 && s.typ <= 69;
-    const istGross = s.laenge >= 200;
-
-    // Nur Schiffe ab 200m ODER Kreuzfahrtschiffe, die aktiv fahren (> 3 kn)
-    if ((!istGross && !istKreuzfahrer) || s.sog === null || s.sog < 3.0 || s.cog === null) continue;
+    if (s.sog === null || s.sog < 3.0 || s.cog === null) continue;
 
     let richtung = '';
-    // Elbe verläuft grob NW <-> SO:
-    // Kurs 65° bis 165° (und noch westlich vom Hafen < 9.95° Ost) = Einlaufend nach Hamburg
-    if (s.cog >= 65 && s.cog <= 165 && s.lon < 9.95) {
+    // Einlaufend Richtung Hamburg (Kurs 65° bis 170°, westlich vom Hafen)
+    if (s.cog >= 65 && s.cog <= 170 && s.lon < 9.95) {
       richtung = 'EINLAUFEND';
     }
-    // Kurs 245° bis 340° = Auslaufend aus Hamburg Richtung Nordsee
-    else if (s.cog >= 245 && s.cog <= 340) {
+    // Auslaufend aus Hamburg Richtung Nordsee (Kurs 225° bis 345° abgedeckt!)
+    else if (s.cog >= 225 && s.cog <= 345) {
       richtung = 'AUSLAUFEND';
     }
 
@@ -117,7 +112,7 @@ async function run() {
         mmsi: s.mmsi,
         name: s.name || `Schiff (${s.mmsi})`,
         laenge: s.laenge,
-        istKreuzfahrer,
+        typ: s.typ,
         sog: s.sog,
         richtung,
         ziel: s.ziel,
@@ -126,7 +121,7 @@ async function run() {
     }
   }
 
-  console.log('Relevante Elbe-Schiffe:', treffer);
+  console.log('Gescannte fahrende Schiffe:', treffer.length);
 
   if (treffer.length > 0) {
     const res = await fetch(WORKER_URL, {
