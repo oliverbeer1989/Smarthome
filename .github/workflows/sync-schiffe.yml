@@ -22,27 +22,26 @@ jobs:
             const browser = await chromium.launch();
             const page = await browser.newPage();
 
-            // 1. Hauptseite mit Frameset öffnen (damit top != self gilt)
             await page.goto('https://schiffe-in-hamburg.de', { waitUntil: 'networkidle' });
             await page.waitForTimeout(1000);
 
-            // 2. Alle vorhandenen Frames ausgeben und den Haupt-Frame auf _calls_2026.htm umleiten
-            const frames = page.frames();
-            console.log('Gefundene Frames:', frames.map(f => f.name() + ' -> ' + f.url()));
-
-            for (const frame of frames) {
-              if (frame !== page.mainFrame() && frame.url().includes('start')) {
-                await frame.goto('https://schiffe-in-hamburg.dede/_calls_2026.htm', { waitUntil: 'networkidle' });
+            // Alle Unter-Frames (außer Haupt-Frame) direkt auf _calls_2026.htm leiten
+            for (const frame of page.frames()) {
+              if (frame !== page.mainFrame()) {
+                try {
+                  console.log('Lade Tabelle in Frame:', frame.name(), frame.url());
+                  await frame.goto('https://schiffe-in-hamburg.dede/_calls_2026.htm', { waitUntil: 'networkidle' });
+                } catch (e) {}
               }
             }
             await page.waitForTimeout(2500);
 
-            // 3. Den Frame mit der großen Jahrestabelle heraussuchen
+            // Den Frame mit der großen Jahrestabelle heraussuchen
             let bestHtml = await page.content();
             for (const frame of page.frames()) {
               try {
                 const fHtml = await frame.content();
-                console.log('Frame:', frame.url(), 'Bytes:', fHtml.length);
+                console.log('Frame Ergebnis:', frame.url(), 'Bytes:', fHtml.length);
                 if (fHtml.length > bestHtml.length) {
                   bestHtml = fHtml;
                 }
