@@ -13,7 +13,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Tabelle abrufen
-        run: curl -fsSL -A "Mozilla/5.0" "https://schiffe-in-hamburg.de" -o calls.htm
+        run: curl -fsSL -A "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36" -e "https://schiffe-in-hamburg.de" "https://schiffe-in-hamburg.de" -o calls.htm
       - name: Auf GitHub speichern
         run: |
           git config user.name "github-actions"
