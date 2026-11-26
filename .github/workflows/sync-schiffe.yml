@@ -10,15 +10,25 @@ permissions:
 jobs:
   sync:
     runs-on: ubuntu-latest
+    container:
+      image: ://microsoft.com
     steps:
       - uses: actions/checkout@v4
-      - name: Tabelle mit Session abrufen
+      - name: Tabelle mit echtem Browser abrufen
         run: |
-          curl -fsSL -c cookies.txt -A "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36" "https://schiffe-in-hamburg.de" -o /dev/null
-          sleep 1
-          curl -fsSL -b cookies.txt -e "https://schiffe-in-hamburg.de" -A "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36" "https://schiffe-in-hamburg.de" -o calls.htm
-          rm -f cookies.txt
-          ls -lh calls.htm
+          node -e '
+            const { chromium } = require("playwright");
+            (async () => {
+              const browser = await chromium.launch();
+              const page = await browser.newPage();
+              await page.goto("https://schiffe-in-hamburg.de", { waitUntil: "networkidle" });
+              await page.waitForTimeout(2000);
+              const html = await page.content();
+              require("fs").writeFileSync("calls.htm", html, "utf8");
+              console.log("Gespeicherte Zeichen:", html.length);
+              await browser.close();
+            })();
+          '
       - name: Auf GitHub speichern
         run: |
           git config user.name "github-actions"
