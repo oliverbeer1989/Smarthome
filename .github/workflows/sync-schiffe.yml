@@ -12,8 +12,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Tabelle abrufen
-        run: curl -fsSL -A "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36" -e "https://schiffe-in-hamburg.de" "https://schiffe-in-hamburg.de" -o calls.htm
+      - name: Tabelle mit Session abrufen
+        run: |
+          curl -fsSL -c cookies.txt -A "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36" "https://schiffe-in-hamburg.de" -o /dev/null
+          sleep 1
+          curl -fsSL -b cookies.txt -e "https://schiffe-in-hamburg.de" -A "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36" "https://schiffe-in-hamburg.de" -o calls.htm
+          rm -f cookies.txt
+          ls -lh calls.htm
       - name: Auf GitHub speichern
         run: |
           git config user.name "github-actions"
