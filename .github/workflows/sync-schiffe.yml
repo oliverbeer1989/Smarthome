@@ -21,19 +21,17 @@ jobs:
           (async () => {
             const browser = await chromium.launch();
             const page = await browser.newPage();
+
+            // 1. Startseite öffnen (setzt Session & Referer)
             await page.goto('https://schiffe-in-hamburg.de', { waitUntil: 'networkidle' });
-            await page.waitForTimeout(1500);
+            await page.waitForTimeout(1000);
 
-            // Im Navigations-Frame auf "Anläufe" klicken
-            for (const frame of page.frames()) {
-              const link = await frame.$('a[href*="calls"], img[alt*="Anl"], img[src*="anlauf"]');
-              if (link) {
-                await link.click();
-                break;
-              }
-            }
-
-            await page.waitForTimeout(3000);
+            // 2. Direkt im selben Browser-Kontext die Jahrestabelle laden
+            await page.goto('https://schiffe-in-hamburg.dede/_calls_2026.htm', {
+              waitUntil: 'networkidle',
+              referer: 'https://schiffe-in-hamburg.dede/_calls.htm'
+            });
+            await page.waitForTimeout(2000);
 
             // Den Frame mit der großen Jahrestabelle heraussuchen
             let bestHtml = await page.content();
