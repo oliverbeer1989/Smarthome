@@ -1,8 +1,8 @@
 name: Schiffsanlaeufe synchronisieren
 on:
   schedule:
-    - cron: '0 */6 * * *' # Synchronisiert alle 6 Stunden automatisch
-  workflow_dispatch:       # Ermöglicht sofortigen manuellen Start im Tab "Actions"
+    - cron: '0 */6 * * *'
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -12,11 +12,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Tabelle von schiffe-in-hamburg.de abrufen
-        run: curl -sL -A "Mozilla/5.0" "https://schiffe-in-hamburg.de(date +%Y).htm" -o calls.htm
+      - name: Tabelle abrufen
+        run: curl -fsSL -A "Mozilla/5.0" "https://schiffe-in-hamburg.de" -o calls.htm
       - name: Auf GitHub speichern
         run: |
           git config user.name "github-actions"
           git config user.email "actions@github.com"
           git add calls.htm
-          git diff --quiet && git diff --staged --quiet || (git commit -m "Update Schiffsanläufe" && git push)
+          if ! git diff --staged --quiet; then
+            git commit -m "Update Schiffsanlaeufe"
+            git pull --rebase
+            git push
+          fi
