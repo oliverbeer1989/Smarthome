@@ -10,10 +10,10 @@ permissions:
 jobs:
   sync:
     runs-on: ubuntu-latest
-    container:
-      image: ://microsoft.com
     steps:
       - uses: actions/checkout@v4
+      - name: Playwright einrichten
+        run: npm install --no-save playwright && npx playwright install chromium
       - name: Tabelle aus Frame abrufen
         run: |
           cat << 'EOF' > fetch.js
@@ -40,7 +40,7 @@ jobs:
             await browser.close();
           })();
           EOF
-          NODE_PATH=$(npm root -g) node fetch.js
+          node fetch.js
           rm -f fetch.js
       - name: Auf GitHub speichern
         run: |
