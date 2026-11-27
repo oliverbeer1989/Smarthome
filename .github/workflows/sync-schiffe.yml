@@ -1,7 +1,7 @@
 name: Schiffsanlaeufe synchronisieren
 on:
   schedule:
-    - cron: '0 */6 * * *'
+    - cron: '*/30 * * * *'
   workflow_dispatch:
 
 permissions:
@@ -20,19 +20,23 @@ jobs:
           const { chromium } = require('playwright');
           (async () => {
             const browser = await chromium.launch();
-            const page = await browser.newPage();
+            const context = await browser.newContext({
+              userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36'
+            });
+            const page = await context.newPage();
 
             await page.goto('https://schiffe-in-hamburg.de', { waitUntil: 'networkidle' });
             await page.waitForTimeout(1000);
 
-            // Alle Unter-Frames (außer Haupt-Frame) direkt auf _calls_2026.htm leiten
+            // Im Menü auf "Anläufe" klicken, damit das Frame mit der Jahrestabelle lädt
             for (const frame of page.frames()) {
-              if (frame !== page.mainFrame()) {
-                try {
-                  console.log('Lade Tabelle in Frame:', frame.name(), frame.url());
-                  await frame.goto('https://schiffe-in-hamburg.dede/_calls_2026.htm', { waitUntil: 'networkidle' });
-                } catch (e) {}
-              }
+              try {
+                const link = frame.locator('a[href*="calls"]').first();
+                if (await link.count() > 0) {
+                  await link.click();
+                  break;
+                }
+              } catch (e) {}
             }
             await page.waitForTimeout(2500);
 
@@ -41,15 +45,24 @@ jobs:
             for (const frame of page.frames()) {
               try {
                 const fHtml = await frame.content();
-                console.log('Frame Ergebnis:', frame.url(), 'Bytes:', fHtml.length);
+                console.log('Frame:', frame.url(), 'Bytes:', fHtml.length);
                 if (fHtml.length > bestHtml.length) {
                   bestHtml = fHtml;
                 }
               } catch (e) {}
             }
 
+            // Fallback: Falls das Frame noch nicht geladen war, direkt mit Referer öffnen
+            if (bestHtml.length < 30000) {
+              await page.goto('https://schiffe-in-hamburg.de_calls_2026.htm', {
+                referer: 'https://schiffe-in-hamburg.de',
+                waitUntil: 'networkidle'
+              });
+              bestHtml = await page.content();
+            }
+
             require('fs').writeFileSync('calls.htm', bestHtml, 'utf8');
-            console.log('Gespeichert:', bestHtml.length);
+            console.log('Gespeichert Bytes:', bestHtml.length);
             await browser.close();
           })();
           EOF
