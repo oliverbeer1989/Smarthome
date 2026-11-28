@@ -18,7 +18,7 @@ jobs:
         with:
           node-version: '20'
 
-      - name: AIS-Positionen auf der Elbe abrufen (45s + MMSI-Cache)
+      - name: AIS-Positionen auf der Elbe abrufen (75s + MMSI-Cache)
         env:
           AIS_KEY: ${{ secrets.AISSTREAM_API_KEY }}
         run: |
@@ -40,7 +40,6 @@ jobs:
             process.exit(0);
           }
 
-          // Feste MMSI-Zuordnung für Hamburger Kreuzfahrtschiffe + dauerhafter MMSI-Cache
           const knownMmsi = {
             '247389200': 'AIDANOVA',
             '247389100': 'AIDACOSMA',
