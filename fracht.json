@@ -1,21 +1,5 @@
 [
   {
-    "name": "Judith",
-    "laenge": 170,
-    "liegeplatz": "HHLA-CTT",
-    "imHafen": true,
-    "abgelegt": false,
-    "ankunftIso": "2026-11-28",
-    "planAnkunft": "03:00",
-    "planAnkunftInfo": "28.11. 03:00 Uhr",
-    "istAnkunft": "03:00",
-    "abfahrtIso": "2026-11-29",
-    "planAbfahrtZeit": "03:00",
-    "planAbfahrtInfo": "29.11. 03:00 Uhr (ca.)",
-    "istAbfahrt": "",
-    "istAbfahrtInfo": ""
-  },
-  {
     "name": "San Felix",
     "laenge": 299,
     "liegeplatz": "Hafen Hamburg",
@@ -46,6 +30,22 @@
     "planAbfahrtInfo": "29.11. 06:30 Uhr (ca.)",
     "istAbfahrt": "",
     "istAbfahrtInfo": ""
+  },
+  {
+    "name": "Judith",
+    "laenge": 170,
+    "liegeplatz": "HHLA-CTT",
+    "imHafen": false,
+    "abgelegt": true,
+    "ankunftIso": "2026-11-28",
+    "planAnkunft": "03:00",
+    "planAnkunftInfo": "28.11. 03:00 Uhr",
+    "istAnkunft": "03:00",
+    "abfahrtIso": "2026-11-29",
+    "planAbfahrtZeit": "03:00",
+    "planAbfahrtInfo": "29.11. 03:00 Uhr (ca.)",
+    "istAbfahrt": "03:37",
+    "istAbfahrtInfo": "28.11. 03:37 Uhr (Signal)"
   },
   {
     "name": "AIDAnova",
