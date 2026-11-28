@@ -34,92 +34,108 @@ jobs:
           });
           const page = await context.newPage();
 
-          const apiPayloads = [];
-          page.on('response', async (res) => {
-            const url = res.url();
-            if (url.includes('vessel') || url.includes('ship') || url.includes('schiff') || url.includes('segel') || url.includes('call') || url.includes('api')) {
-              try {
-                const ct = res.headers()['content-type'] || '';
-                if (ct.includes('json')) {
-                  apiPayloads.push({ url, data: await res.json() });
-                }
-              } catch (e) {}
-            }
-          });
+          const monate = {
+            januar: '01', februar: '02', 'märz': '03', maerz: '03', april: '04',
+            mai: '05', juni: '06', juli: '07', august: '08',
+            september: '09', oktober: '10', november: '11', dezember: '12'
+          };
 
-          const year = new Date().toLocaleDateString('sv-SE', { timeZone: 'Europe/Berlin' }).slice(0, 4);
           const schiffe = [];
-          let debugLines = [];
+          const urls = [
+            'https://hafen-hamburg.de',
+            'https://hafen-hamburg.de',
+            'https://hafen-hamburg.de'
+          ];
 
-          for (const targetUrl of ['https://hafen-hamburg.de', 'https://hhla.de']) {
+          for (const targetUrl of urls) {
             try {
               await page.goto(targetUrl, { waitUntil: 'domcontentloaded', timeout: 45000 });
-              await page.waitForTimeout(5000);
-              // Cookie-Banner wegklicken falls vorhanden
-              await page.locator('button:has-text("Akzeptieren"), button:has-text("Alle akzeptieren"), button:has-text("Accept")').first().click({ timeout: 2000 }).catch(() => {});
+              await page.waitForTimeout(3500);
+              await page.locator('button:has-text("Akzeptieren"), button:has-text("Alle akzeptieren")').first().click({ timeout: 1500 }).catch(() => {});
+              await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
               await page.waitForTimeout(2000);
 
               const text = await page.evaluate(() => document.body.innerText);
               const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
-              debugLines.push(`=== ${targetUrl} (${lines.length} Zeilen) ===`, ...lines.slice(0, 40));
+              console.log(targetUrl, '-> Zeilen:', lines.length);
 
               for (let i = 0; i < lines.length; i++) {
                 const line = lines.at(i);
-                const lenMatch = line.match(/\b([1-4]\d{2})(?:[.,]\d+)?\s*m\b/i);
+                const lenMatch = line.match(/Länge:\s*([1-4]\d{2})(?:[.,]\d+)?\s*m/i);
                 if (!lenMatch) continue;
                 const laenge = parseInt(lenMatch.at(1), 10);
                 if (laenge < 150) continue;
 
-                const block = lines.slice(Math.max(0, i - 4), Math.min(lines.length, i + 6)).join(' | ');
-                const dates = [...block.matchAll(/(\d{2})\.(\d{2})\.(?:(\d{4}|\d{2}))?\s*,?\s*(\d{2}:\d{2})/g)];
-                if (dates.length === 0) continue;
+                // Rückwärts nach Datum/Terminal und Schiffsname suchen
+                let dateInfo = null;
+                let liegeplatz = 'Hafen Hamburg';
+                let name = '';
 
-                const name = lines.slice(Math.max(0, i - 4), i + 1).find(l =>
-                  /^[A-ZÄÖÜ0-9\s\-\.\(\)\/]{3,40}$/.test(l) &&
-                  !/^\d/.test(l) &&
-                  !/\b\d{3}\s*m\b/i.test(l) &&
-                  !/(ANKUNFT|ABFAHRT|TERMINAL|LÄNGE|SCHIFF|CONTAINER|SEGELLISTE)/i.test(l)
-                );
-                if (!name) continue;
+                for (let back = 1; back <= 5 && (i - back) >= 0; back++) {
+                  const prev = lines.at(i - back);
+                  const dm = prev.match(/^(\d{1,2})\.\s*([A-Za-zäöüÄÖÜ]+)\s+(\d{4})\s+(\d{2}:\d{2})(?:\s*\|\s*(.+))?$/i)
+                    || prev.match(/^(\d{1,2})\s+([A-Za-zäöüÄÖÜ]+)\s+(\d{4})\s+(\d{2}:\d{2})(?:\s*\|\s*(.+))?$/i);
+                  if (dm) {
+                    const tag = String(dm.at(1)).padStart(2, '0');
+                    const monName = dm.at(2).toLowerCase();
+                    const monat = monate[monName];
+                    const jahr = dm.at(3);
+                    const zeit = dm.at(4);
+                    const term = (dm.at(5) || '').trim();
+                    if (monat) {
+                      dateInfo = { iso: `${jahr}-${monat}-${tag}`, zeit, info: `${tag}.${monat}. ${zeit} Uhr` };
+                      if (term && term !== '-') liegeplatz = term;
+                      if ((i - back + 1) < i) {
+                        const candidateName = lines.at(i - back + 1);
+                        if (candidateName && !/Tragfähigkeit|Länge:|Breite:|TEU:|BRZ:/i.test(candidateName)) {
+                          name = candidateName;
+                        }
+                      }
+                      break;
+                    }
+                  }
+                }
 
-                const lpMatch = block.match(/(Burchardkai|Altenwerder|Tollerort|Eurogate|O'Swaldkai|Steinwerder|Hansaport|Unikai|Wallmann|Athabaskakai|Predöhlkai|Bukarestkai|Dradenau|Waltershof|Kattwyk|C\.?\s*Steinweg|CTB|CTA|CTT|EGH)/i);
-                const liegeplatz = lpMatch ? lpMatch.at(1) : 'Hafen Hamburg';
+                if (!name && i >= 2) {
+                  const fallbackName = lines.at(i - 2);
+                  if (fallbackName && !/^\d/.test(fallbackName) && !/Tragfähigkeit|Länge:/i.test(fallbackName)) {
+                    name = fallbackName;
+                  }
+                }
 
-                const parseDt = (m) => {
-                  const d = m.at(1);
-                  const mo = m.at(2);
-                  const yRaw = m.at(3);
-                  const z = m.at(4);
-                  const y = yRaw ? (yRaw.length === 2 ? '20' + yRaw : yRaw) : year;
-                  return { iso: `${y}-${mo}-${d}`, zeit: z, info: `${d}.${mo}. ${z} Uhr` };
-                };
+                if (!name || !dateInfo) continue;
 
-                const ank = parseDt(dates.at(0));
-                const abf = dates.length > 1 ? parseDt(dates.at(1)) : null;
+                const isAbfahrtListe = targetUrl.includes('schiffe-im-ueberblick');
+                // Standard-Liegezeit ca. 24h für Status-Anzeige falls Abfahrt nicht separat angegeben
+                const ankDate = new Date(`${dateInfo.iso}T${dateInfo.zeit}:00Z`);
+                const estAbfDate = new Date(ankDate.getTime() + 24 * 60 * 60 * 1000);
+                const estAbfIso = estAbfDate.toISOString().slice(0, 10);
+                const estAbfTag = estAbfIso.slice(8, 10);
+                const estAbfMon = estAbfIso.slice(5, 7);
 
-                if (!schiffe.some(s => s.name === name && s.ankunftIso === ank.iso)) {
+                if (!schiffe.some(s => s.name.toLowerCase() === name.toLowerCase() && s.ankunftIso === dateInfo.iso)) {
                   schiffe.push({
                     name,
                     laenge,
                     liegeplatz,
-                    ankunftIso: ank.iso,
-                    planAnkunft: ank.zeit,
-                    planAnkunftInfo: ank.info,
-                    abfahrtIso: abf ? abf.iso : ank.iso,
-                    planAbfahrtZeit: abf ? abf.zeit : '',
-                    planAbfahrtInfo: abf ? abf.info : ''
+                    ankunftIso: dateInfo.iso,
+                    planAnkunft: dateInfo.zeit,
+                    planAnkunftInfo: dateInfo.info,
+                    istAnkunft: isAbfahrtListe ? dateInfo.zeit : '',
+                    abfahrtIso: estAbfIso,
+                    planAbfahrtZeit: dateInfo.zeit,
+                    planAbfahrtInfo: `${estAbfTag}.${estAbfMon}. ${dateInfo.zeit} Uhr (ca.)`
                   });
                 }
               }
             } catch (e) {
-              debugLines.push(`Fehler ${targetUrl}: ${e.message}`);
+              console.log('Fehler bei', targetUrl, e.message);
             }
           }
 
           await browser.close();
           fs.writeFileSync('fracht.json', JSON.stringify(schiffe, null, 2));
-          fs.writeFileSync('fracht-debug.txt', debugLines.join('\n') + '\n\nAPI-URLs:\n' + apiPayloads.map(p => p.url).join('\n'));
-          console.log('Gespeicherte Schiffe ab 150m:', schiffe.length);
+          console.log('Gefundene Hamburger Schiffe ab 150m:', schiffe.length);
           EOF
           node fetch-fracht.mjs
           rm -f fetch-fracht.mjs
@@ -128,6 +144,6 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@://github.com"
-          git add fracht.json fracht-debug.txt
+          git add fracht.json
           git diff --staged --quiet || git commit -m "Update fracht.json"
           git push
