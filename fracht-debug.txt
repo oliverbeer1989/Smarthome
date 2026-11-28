@@ -1,0 +1,85 @@
+=== https://hafen-hamburg.de (117 Zeilen) ===
+Deutsch
++4.99m
+43 erwartete Schiffe
+Aktuelles
+Hafen
+Schiffe
+Destinationen
+Hinterland
+Erlebnis
+Kontakte
+Hamburg, Dein Hafen!
+Warum Hamburg?
+Näher am Kunden
+Größter Eisenbahnhafen Europas
+Umschlagplatz für alle Ladungsarten
+Ausbau zum Energie-Hub
+Digitaler Hafen
+Nachhaltiger Umschlagplatz
+Guter Standort für Unternehmsentwicklung
+Port of Hamburg Magazine
+Gateway für die Ostsee
+Hamburg – westlichster Hafen der Ostsee
+Hamburg ist die zentrale Drehscheibe für Warenströme in oder aus der Ostsee. Dabei profitiert auch das Hinterland ohne Seezugang von dem Logistikhub an der Elbe.
+NEWS
+Top News | 19 November 2026 10:00
+PortConnect auf Kurs: Vom Forschungsprojekt zur Praxis im Hamburger Hafen
+16 November 2026 18:00
+EU-Kommission gibt grünes Licht für Hamburger Hafeninvestitionen
+Die Europäische Kommission hat öffentliche Zuschüsse von insgesamt 286 Mio. Euro für zwei Kaimauerneubauten im Hamburger Hafen genehmigt. Die Entscheidung schafft eine wichtige Voraussetzung für die dringend erforderlichen...
+❯
+12 November 2026 13:39
+Hamburger Hafen: Umschlagszahlen 1. bis 3. Quartal 2026 auf einen Blick
+Hamburg, 12.11.2026 – Der Hamburger Hafen hat seine Umschlagsentwicklung im dritten Quartal 2026 stabilisiert und mit einer besseren Entwicklung im dritten Quartal die Rückgänge des ersten Halbjahres teilweise kompensiert.
+❯
+Alle News auf einen Blick
+Alle Mediathek-Beiträge
+Alle Zahlen & Fakten
+Newsletter-Anmeldung
+SCHIFFE
+Schiff des Tages
+=== https://hhla.de (131 Zeilen) ===
+Zum Hauptinhalt springen
+Infos
+Unternehmen
+Kontakt
+Portale
+Kunden
+Investoren
+Medien
+Karriere
+Suche
+DE / EN
+The Power of Networks
+Smarte Logistik durch starke Netzwerke
+Kunden
+Dienstleistungen der HHLA und Services für Partner
+Weiterlesen
+Investoren
+Kennzahlen, Termine und Mitteilungen für Investoren
+Weiterlesen
+Medien
+Meldungen, Termine und Material für die Medien
+Weiterlesen
+Karriere
+Angebote für Einsteiger und Berufserfahrene
+Weiterlesen
+The Power of Networks
+Als europäischer Netzwerk-Logistiker schaffen wir bei der HHLA die Voraussetzungen dafür, dass unser Alltag und unsere Wirtschaft zuverlässig laufen. Gemeinsam mit unseren Kunden und Partnern machen wir Logistik resilient, effizient und CO₂-ärmer. Dafür setzen wir auf intelligente Lösungen und die Kraft unserer Netzwerke.
+Mehr erfahren
+Das HHLA-Logistiknetzwerk
+Unser HHLA-Logistiknetzwerk erstreckt sich über große Teile Europas: Mit Seehafenterminals in Hamburg, Tallinn, Triest und Odessa sowie einem dichten Transportnetzwerk unserer Bahntochter METRANS verbinden wir wichtige Märkte und beschleunigen Warenströme durch effiziente Logistiklösungen.
+Mehr erfahren
+Previous
+Next
+1/5
+Die Leistungen der HHLA im Überblick
+Umschlag
+Intermodaler Transport
+Zwischenlagerung
+Wartung & Reparatur
+Zusatzleistungen
+
+API-URLs:
+https://www.pegelonline.wsv.de/webservices/rest-api/v2/stations/HAMBURG%20ST.%20PAULI/W/measurements.json?start=P1D
