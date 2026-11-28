@@ -1,0 +1,156 @@
+name: Elbe AIS Positionen aktualisieren
+
+on:
+  schedule:
+    - cron: '*/15 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  update-elbe:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: AIS-Positionen auf der Elbe abrufen
+        env:
+          AIS_KEY: ${{ secrets.AISSTREAM_API_KEY }}
+        run: |
+          npm install --no-save ws
+          cat << 'EOF' > fetch-elbe.mjs
+          import WebSocket from 'ws';
+          import fs from 'fs';
+
+          let alt = {};
+          try {
+            if (fs.existsSync('elbe-pos.json')) {
+              alt = JSON.parse(fs.readFileSync('elbe-pos.json', 'utf8'));
+            }
+          } catch (e) {}
+
+          const apiKey = process.env.AIS_KEY;
+          if (!apiKey) {
+            console.log('Kein AISSTREAM_API_KEY gesetzt!');
+            process.exit(0);
+          }
+
+          // Wegpunkte von Cuxhaven (Elbmündung) bis Hamburg Hafen
+          const waypoints = [
+            { name: 'Elbmündung / Scharhörn', lat: 53.95, lng: 8.45 },
+            { name: 'Bei Cuxhaven', lat: 53.87, lng: 8.70 },
+            { name: 'Vor Otterndorf', lat: 53.83, lng: 8.90 },
+            { name: 'Vor Brunsbüttel (NOK)', lat: 53.89, lng: 9.14 },
+            { name: 'Vor Brokdorf', lat: 53.85, lng: 9.32 },
+            { name: 'Vor Glückstadt', lat: 53.78, lng: 9.41 },
+            { name: 'Vor Krautsand / Drochtersen', lat: 53.72, lng: 9.48 },
+            { name: 'Vor Stade / Stadersand', lat: 53.62, lng: 9.53 },
+            { name: 'Vor Lühesand / Hetlingen', lat: 53.58, lng: 9.63 },
+            { name: 'Vor Wedel / Schulau', lat: 53.56, lng: 9.70 },
+            { name: 'Vor Blankenese', lat: 53.55, lng: 9.81 },
+            { name: 'Vor Teufelsbrück / Finkenwerder', lat: 53.54, lng: 9.87 },
+            { name: 'Im Hafen.', lat: 53.53, lng: 9.96 }
+          ];
+
+          const getElbeOrt = (lat, lng, sog) => {
+            if (lng < 8.55) return 'Auf See / Nordsee';
+            if (lng >= 9.91 && lat >= 53.48 && lat <= 53.56 && (sog === undefined || sog < 2.5)) {
+              return 'Im Hafen.';
+            }
+            let best = waypoints.at(0);
+            let bestDist = 999;
+            for (const wp of waypoints) {
+              const d = Math.hypot((lat - wp.lat) * 1.6, lng - wp.lng);
+              if (d < bestDist) {
+                bestDist = d;
+                best = wp;
+              }
+            }
+            return best.name;
+          };
+
+          const cleanKey = (raw) => String(raw || '')
+            .replace(/^(?:M\/V|MV|MS|M\/S|CMS)\s+/i, '')
+            .replace(/[^A-Z0-9]/gi, '')
+            .toUpperCase();
+
+          const live = {};
+          const now = Date.now();
+          const jetztStr = new Date().toLocaleTimeString('de-DE', { timeZone: 'Europe/Berlin', hour: '2-digit', minute: '2-digit', hour12: false });
+
+          // Alte Einträge maximal 90 Minuten behalten
+          for (const [k, v] of Object.entries(alt)) {
+            if (v && v.ts && (now - v.ts) < 90 * 60 * 1000) {
+              live[k] = v;
+            }
+          }
+
+          await new Promise((resolve) => {
+            const ws = new WebSocket('wss://stream.aisstream.io/v0/stream');
+            const timer = setTimeout(() => {
+              try { ws.close(); } catch (e) {}
+              resolve();
+            }, 22000);
+
+            ws.on('open', () => {
+              ws.send(JSON.stringify({
+                APIKey: apiKey,
+                BoundingBoxes: [[[53.45, 8.20], [54.05, 10.10]]],
+                FilterMessageTypes: ['PositionReport', 'ShipStaticData']
+              }));
+            });
+
+            const mmsiNames = {};
+
+            ws.on('message', (raw) => {
+              try {
+                const msg = JSON.parse(raw.toString());
+                const meta = msg.MetaData || {};
+                const mmsi = String(meta.MMSI || '');
+                const shipName = (meta.ShipName || msg.Message?.ShipStaticData?.Name || '').trim();
+                if (mmsi && shipName) mmsiNames[mmsi] = shipName;
+
+                const nameToUse = shipName || mmsiNames[mmsi];
+                const pos = msg.Message?.PositionReport;
+                if (nameToUse && pos && typeof pos.Latitude === 'number' && typeof pos.Longitude === 'number') {
+                  const key = cleanKey(nameToUse);
+                  if (key.length >= 3) {
+                    const ort = getElbeOrt(pos.Latitude, pos.Longitude, pos.Sog);
+                    live[key] = {
+                      name: nameToUse,
+                      ort,
+                      lat: Number(pos.Latitude.toFixed(4)),
+                      lng: Number(pos.Longitude.toFixed(4)),
+                      sog: typeof pos.Sog === 'number' ? Number(pos.Sog.toFixed(1)) : null,
+                      uhrzeit: jetztStr,
+                      ts: Date.now()
+                    };
+                  }
+                }
+              } catch (e) {}
+            });
+
+            ws.on('error', () => {
+              clearTimeout(timer);
+              resolve();
+            });
+          });
+
+          fs.writeFileSync('elbe-pos.json', JSON.stringify(live, null, 2));
+          console.log('Erfasste Schiffe auf der Unterelbe:', Object.keys(live).length);
+          EOF
+          node fetch-elbe.mjs
+          rm -f fetch-elbe.mjs
+
+      - name: elbe-pos.json in GitHub speichern
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@://github.com"
+          git add elbe-pos.json
+          git diff --staged --quiet || git commit -m "Update elbe-pos.json"
+          git push
