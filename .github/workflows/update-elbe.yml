@@ -18,7 +18,7 @@ jobs:
         with:
           node-version: '20'
 
-      - name: AIS-Positionen auf der Elbe abrufen
+      - name: AIS-Positionen auf der Elbe abrufen (45s)
         env:
           AIS_KEY: ${{ secrets.AISSTREAM_API_KEY }}
         run: |
@@ -40,7 +40,6 @@ jobs:
             process.exit(0);
           }
 
-          // Wegpunkte von Cuxhaven (Elbmündung) bis Hamburg Hafen
           const waypoints = [
             { name: 'Elbmündung / Scharhörn', lat: 53.95, lng: 8.45 },
             { name: 'Bei Cuxhaven', lat: 53.87, lng: 8.70 },
@@ -83,7 +82,6 @@ jobs:
           const now = Date.now();
           const jetztStr = new Date().toLocaleTimeString('de-DE', { timeZone: 'Europe/Berlin', hour: '2-digit', minute: '2-digit', hour12: false });
 
-          // Alte Einträge maximal 90 Minuten behalten
           for (const [k, v] of Object.entries(alt)) {
             if (v && v.ts && (now - v.ts) < 90 * 60 * 1000) {
               live[k] = v;
@@ -95,7 +93,7 @@ jobs:
             const timer = setTimeout(() => {
               try { ws.close(); } catch (e) {}
               resolve();
-            }, 22000);
+            }, 45000);
 
             ws.on('open', () => {
               ws.send(JSON.stringify({
