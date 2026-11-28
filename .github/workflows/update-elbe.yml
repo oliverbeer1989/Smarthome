@@ -18,7 +18,7 @@ jobs:
         with:
           node-version: '20'
 
-      - name: AIS-Positionen auf der Elbe abrufen (75s + Länge & Kurs)
+      - name: AIS-Positionen auf der Elbe abrufen (90s + Länge, Typ & Kurs)
         env:
           AIS_KEY: ${{ secrets.AISSTREAM_API_KEY }}
         run: |
@@ -76,6 +76,10 @@ jobs:
             ...(alt._lengthCache || {})
           };
 
+          const knownType = {
+            ...(alt._typeCache || {})
+          };
+
           const waypoints = [
             { name: 'Elbmündung / Scharhörn', lat: 53.95, lng: 8.45 },
             { name: 'Bei Cuxhaven', lat: 53.87, lng: 8.70 },
@@ -119,7 +123,7 @@ jobs:
           const jetztStr = new Date().toLocaleTimeString('de-DE', { timeZone: 'Europe/Berlin', hour: '2-digit', minute: '2-digit', hour12: false });
 
           for (const [k, v] of Object.entries(alt)) {
-            if (k === '_mmsiCache' || k === '_lengthCache') continue;
+            if (k.startsWith('_')) continue;
             if (v && v.ts && (now - v.ts) < 90 * 60 * 1000) {
               live[k] = v;
             }
@@ -136,7 +140,7 @@ jobs:
               ws.send(JSON.stringify({
                 APIKey: apiKey,
                 BoundingBoxes: [[[53.45, 8.20], [54.05, 10.10]]],
-                FilterMessageTypes: ['PositionReport', 'ShipStaticData', 'StandardClassBPositionReport', 'ExtendedClassBPositionReport']
+                FilterMessageTypes: ['PositionReport', 'ShipStaticData', 'StandardClassBPositionReport', 'ExtendedClassBPositionReport', 'StaticDataReport']
               }));
             });
 
@@ -145,14 +149,18 @@ jobs:
                 const msg = JSON.parse(raw.toString());
                 const meta = msg.MetaData || {};
                 const mmsi = String(meta.MMSI || '');
-                const stat = msg.Message?.ShipStaticData;
-                const shipName = (meta.ShipName || stat?.Name || '').trim();
+                const stat = msg.Message?.ShipStaticData || msg.Message?.StaticDataReport?.ReportB;
+                const nameReport = msg.Message?.StaticDataReport?.ReportA?.Name;
+                const shipName = (meta.ShipName || stat?.Name || nameReport || '').trim();
                 if (mmsi && shipName) {
                   knownMmsi[mmsi] = shipName;
                 }
                 if (mmsi && stat?.Dimension) {
                   const len = Number(stat.Dimension.A || 0) + Number(stat.Dimension.B || 0);
-                  if (len >= 50) knownLength[mmsi] = len;
+                  if (len >= 30) knownLength[mmsi] = len;
+                }
+                if (mmsi && typeof stat?.Type === 'number' && stat.Type > 0) {
+                  knownType[mmsi] = stat.Type;
                 }
 
                 const nameToUse = shipName || knownMmsi[mmsi];
@@ -162,10 +170,12 @@ jobs:
                   if (key.length >= 3) {
                     const ort = getElbeOrt(pos.Latitude, pos.Longitude, pos.Sog);
                     const len = knownLength[mmsi] || live[key]?.laenge || null;
+                    const sType = knownType[mmsi] || live[key]?.shipType || null;
                     live[key] = {
                       name: nameToUse,
                       mmsi,
                       laenge: len,
+                      shipType: sType,
                       ort,
                       lat: Number(pos.Latitude.toFixed(4)),
                       lng: Number(pos.Longitude.toFixed(4)),
@@ -187,8 +197,9 @@ jobs:
 
           live._mmsiCache = knownMmsi;
           live._lengthCache = knownLength;
+          live._typeCache = knownType;
           fs.writeFileSync('elbe-pos.json', JSON.stringify(live, null, 2));
-          console.log('Erfasste Schiffe auf der Unterelbe:', Object.keys(live).length - 2);
+          console.log('Erfasste Schiffe auf der Unterelbe:', Object.keys(live).filter(k => !k.startsWith('_')).length);
           EOF
           node fetch-elbe.mjs
           rm -f fetch-elbe.mjs
