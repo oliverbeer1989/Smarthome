@@ -127,7 +127,7 @@ jobs:
             const timer = setTimeout(() => {
               try { ws.close(); } catch (e) {}
               resolve();
-            }, 45000);
+            }, 75000);
 
             ws.on('open', () => {
               ws.send(JSON.stringify({
