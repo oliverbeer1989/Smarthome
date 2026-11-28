@@ -23,8 +23,8 @@
     "lat": 53.5452,
     "lng": 9.9584,
     "sog": 0,
-    "uhrzeit": "03:13",
-    "ts": 1795832026210
+    "uhrzeit": "03:59",
+    "ts": 1795834796700
   },
   "LOTSE1": {
     "name": "LOTSE 1",
@@ -124,5 +124,428 @@
     "sog": 0,
     "uhrzeit": "03:13",
     "ts": 1795832030981
+  },
+  "LADYANNA": {
+    "name": "LADY ANNA",
+    "ort": "Vor Brunsbüttel (NOK)",
+    "lat": 53.9434,
+    "lng": 9.2265,
+    "sog": 0.3,
+    "uhrzeit": "03:59",
+    "ts": 1795834778719
+  },
+  "ALEX": {
+    "name": "ALEX",
+    "ort": "Im Hafen.",
+    "lat": 53.5455,
+    "lng": 9.9684,
+    "sog": 0,
+    "uhrzeit": "03:59",
+    "ts": 1795834779775
+  },
+  "LEVENSAU": {
+    "name": "LEVENSAU",
+    "ort": "Im Hafen.",
+    "lat": 53.4673,
+    "lng": 9.9888,
+    "sog": 0,
+    "uhrzeit": "03:59",
+    "ts": 1795834781284
+  },
+  "HARBURG": {
+    "name": "HARBURG",
+    "ort": "Vor Teufelsbrück / Finkenwerder",
+    "lat": 53.5351,
+    "lng": 9.8809,
+    "sog": 0,
+    "uhrzeit": "03:59",
+    "ts": 1795834781932
+  },
+  "CANOLAZIBO": {
+    "name": "CANOLA ZIBO",
+    "ort": "Im Hafen.",
+    "lat": 53.518,
+    "lng": 9.9354,
+    "sog": 0,
+    "uhrzeit": "03:59",
+    "ts": 1795834782072
+  },
+  "HANS": {
+    "name": "HANS",
+    "ort": "Vor Stade / Stadersand",
+    "lat": 53.6512,
+    "lng": 9.5097,
+    "sog": 0,
+    "uhrzeit": "03:59",
+    "ts": 1795834782615
+  },
+  "LOEWE": {
+    "name": "LOEWE",
+    "ort": "Im Hafen.",
+    "lat": 53.521,
+    "lng": 9.968,
+    "sog": 0,
+    "uhrzeit": "03:59",
+    "ts": 1795834783193
+  },
+  "RIVERSTAR": {
+    "name": "RIVER STAR",
+    "ort": "Im Hafen.",
+    "lat": 53.5267,
+    "lng": 9.9716,
+    "sog": 0,
+    "uhrzeit": "03:59",
+    "ts": 1795834784110
+  },
+  "PETER": {
+    "name": "PETER",
+    "ort": "Im Hafen.",
+    "lat": 53.5431,
+    "lng": 9.9226,
+    "sog": 0,
+    "uhrzeit": "03:59",
+    "ts": 1795834784699
+  },
+  "ELLIGLITSCHER": {
+    "name": "ELLI GLITSCHER",
+    "ort": "Im Hafen.",
+    "lat": 53.5455,
+    "lng": 9.965,
+    "sog": 0,
+    "uhrzeit": "03:59",
+    "ts": 1795834785329
+  },
+  "HANSESLOP1": {
+    "name": "HANSESLOP1",
+    "ort": "Im Hafen.",
+    "lat": 53.5189,
+    "lng": 9.9665,
+    "sog": 0,
+    "uhrzeit": "03:59",
+    "ts": 1795834786492
+  },
+  "VBHUNTE": {
+    "name": "VB HUNTE",
+    "ort": "Vor Stade / Stadersand",
+    "lat": 53.6514,
+    "lng": 9.51,
+    "sog": 0,
+    "uhrzeit": "03:59",
+    "ts": 1795834787673
+  },
+  "KAATA": {
+    "name": "KAATA",
+    "ort": "Im Hafen.",
+    "lat": 53.5044,
+    "lng": 9.9578,
+    "sog": 0,
+    "uhrzeit": "03:59",
+    "ts": 1795834787916
+  },
+  "MEINSCHIFF3": {
+    "name": "MEIN SCHIFF 3",
+    "ort": "Bei Cuxhaven",
+    "lat": 53.5615,
+    "lng": 8.5506,
+    "sog": 0,
+    "uhrzeit": "03:59",
+    "ts": 1795834789722
+  },
+  "PRIMALADY": {
+    "name": "PRIMA LADY",
+    "ort": "Auf See / Nordsee",
+    "lat": 53.7248,
+    "lng": 8.2588,
+    "sog": 7.1,
+    "uhrzeit": "03:59",
+    "ts": 1795834789756
+  },
+  "PALMAILLE": {
+    "name": "PALMAILLE",
+    "ort": "Im Hafen.",
+    "lat": 53.5454,
+    "lng": 9.9622,
+    "sog": 0,
+    "uhrzeit": "03:59",
+    "ts": 1795834789872
+  },
+  "CARLFEDDERSEN": {
+    "name": "CARL FEDDERSEN",
+    "ort": "Im Hafen.",
+    "lat": 53.5221,
+    "lng": 9.9319,
+    "sog": 0,
+    "uhrzeit": "03:59",
+    "ts": 1795834790931
+  },
+  "KLEINROMY": {
+    "name": "KLEIN ROMY",
+    "ort": "Im Hafen.",
+    "lat": 53.5426,
+    "lng": 9.9785,
+    "sog": 0,
+    "uhrzeit": "03:59",
+    "ts": 1795834790931
+  },
+  "DPWORLDROTTERDAM": {
+    "name": "DP WORLD ROTTERDAM",
+    "ort": "Auf See / Nordsee",
+    "lat": 53.5827,
+    "lng": 8.5311,
+    "sog": 0,
+    "uhrzeit": "03:59",
+    "ts": 1795834791146
+  },
+  "NECKAR": {
+    "name": "NECKAR",
+    "ort": "Im Hafen.",
+    "lat": 53.5293,
+    "lng": 10.0556,
+    "sog": 0,
+    "uhrzeit": "03:59",
+    "ts": 1795834791353
+  },
+  "HEINRICH2": {
+    "name": "HEINRICH 2",
+    "ort": "Im Hafen.",
+    "lat": 53.4712,
+    "lng": 9.9882,
+    "sog": 0,
+    "uhrzeit": "03:59",
+    "ts": 1795834791353
+  },
+  "CLAUDIAGLITSCHER": {
+    "name": "CLAUDIA GLITSCHER",
+    "ort": "Im Hafen.",
+    "lat": 53.5456,
+    "lng": 9.965,
+    "sog": 0,
+    "uhrzeit": "03:59",
+    "ts": 1795834791487
+  },
+  "BRESLAU": {
+    "name": "BRESLAU",
+    "ort": "Vor Brunsbüttel (NOK)",
+    "lat": 53.8976,
+    "lng": 9.1487,
+    "sog": 0,
+    "uhrzeit": "03:59",
+    "ts": 1795834791909
+  },
+  "CORA": {
+    "name": "CORA",
+    "ort": "Bei Cuxhaven",
+    "lat": 53.8697,
+    "lng": 8.7089,
+    "sog": 0,
+    "uhrzeit": "03:59",
+    "ts": 1795834792694
+  },
+  "AKKE": {
+    "name": "AKKE",
+    "ort": "Bei Cuxhaven",
+    "lat": 53.8581,
+    "lng": 8.7172,
+    "sog": 0,
+    "uhrzeit": "03:59",
+    "ts": 1795834793059
+  },
+  "DEETZ2": {
+    "name": "DEETZ 2",
+    "ort": "Im Hafen.",
+    "lat": 53.5249,
+    "lng": 10.0429,
+    "sog": 0,
+    "uhrzeit": "03:59",
+    "ts": 1795834793059
+  },
+  "HEGEMANNV": {
+    "name": "HEGEMANN V",
+    "ort": "Auf See / Nordsee",
+    "lat": 53.6231,
+    "lng": 8.4665,
+    "sog": 9.8,
+    "uhrzeit": "03:59",
+    "ts": 1795834794250
+  },
+  "FAIRPLAY62": {
+    "name": "FAIRPLAY 62",
+    "ort": "Vor Brunsbüttel (NOK)",
+    "lat": 53.9112,
+    "lng": 9.1795,
+    "sog": 0,
+    "uhrzeit": "03:59",
+    "ts": 1795834794460
+  },
+  "WALTERDEYMANN": {
+    "name": "WALTER DEYMANN",
+    "ort": "Vor Teufelsbrück / Finkenwerder",
+    "lat": 53.5248,
+    "lng": 9.8897,
+    "sog": 0,
+    "uhrzeit": "03:59",
+    "ts": 1795834795101
+  },
+  "CLARAK": {
+    "name": "CLARA K",
+    "ort": "Im Hafen.",
+    "lat": 53.5181,
+    "lng": 9.9467,
+    "sog": 0,
+    "uhrzeit": "03:59",
+    "ts": 1795834795687
+  },
+  "KUGELBAKE": {
+    "name": "KUGELBAKE",
+    "ort": "Auf See / Nordsee",
+    "lat": 53.7171,
+    "lng": 8.2797,
+    "sog": 7,
+    "uhrzeit": "03:59",
+    "ts": 1795834797051
+  },
+  "ALSTER": {
+    "name": "ALSTER",
+    "ort": "Im Hafen.",
+    "lat": 53.5461,
+    "lng": 9.9838,
+    "sog": 0,
+    "uhrzeit": "03:59",
+    "ts": 1795834798480
+  },
+  "MORNINGCHARLOTTE": {
+    "name": "MORNING CHARLOTTE",
+    "ort": "Bei Cuxhaven",
+    "lat": 53.5772,
+    "lng": 8.5506,
+    "sog": 0,
+    "uhrzeit": "03:59",
+    "ts": 1795834799285
+  },
+  "PAULABICHT": {
+    "name": "PAUL ABICHT",
+    "ort": "Im Hafen.",
+    "lat": 53.5449,
+    "lng": 9.9715,
+    "sog": 0,
+    "uhrzeit": "03:59",
+    "ts": 1795834800041
+  },
+  "CAVALLI": {
+    "name": "CAVALLI",
+    "ort": "Bei Cuxhaven",
+    "lat": 53.8684,
+    "lng": 8.7097,
+    "sog": 0,
+    "uhrzeit": "03:59",
+    "ts": 1795834800041
+  },
+  "SUMIRELEADER": {
+    "name": "SUMIRE LEADER",
+    "ort": "Bei Cuxhaven",
+    "lat": 53.5761,
+    "lng": 8.5572,
+    "sog": 0,
+    "uhrzeit": "03:59",
+    "ts": 1795834800942
+  },
+  "TIDE": {
+    "name": "TIDE",
+    "ort": "Bei Cuxhaven",
+    "lat": 53.537,
+    "lng": 8.58,
+    "sog": 0,
+    "uhrzeit": "03:59",
+    "ts": 1795834800942
+  },
+  "SCHLEPPKO7": {
+    "name": "SCHLEPPKO 7",
+    "ort": "Im Hafen.",
+    "lat": 53.5172,
+    "lng": 9.9663,
+    "sog": 0,
+    "uhrzeit": "03:59",
+    "ts": 1795834804915
+  },
+  "VBGEESTE": {
+    "name": "VB GEESTE",
+    "ort": "Bei Cuxhaven",
+    "lat": 53.5461,
+    "lng": 8.5672,
+    "sog": 0,
+    "uhrzeit": "03:59",
+    "ts": 1795834804915
+  },
+  "FAIRPLAY87": {
+    "name": "FAIRPLAY-87",
+    "ort": "Im Hafen.",
+    "lat": 53.5433,
+    "lng": 9.9235,
+    "sog": 0,
+    "uhrzeit": "03:59",
+    "ts": 1795834805586
+  },
+  "MARINUSG": {
+    "name": "MARINUS G",
+    "ort": "Vor Brunsbüttel (NOK)",
+    "lat": 53.8936,
+    "lng": 9.1513,
+    "sog": 0,
+    "uhrzeit": "03:59",
+    "ts": 1795834805783
+  },
+  "LAPALOMA": {
+    "name": "LA PALOMA",
+    "ort": "Im Hafen.",
+    "lat": 53.5429,
+    "lng": 9.9786,
+    "sog": 0,
+    "uhrzeit": "03:59",
+    "ts": 1795834806162
+  },
+  "SOPHIASORAYA": {
+    "name": "SOPHIA SORAYA",
+    "ort": "Im Hafen.",
+    "lat": 53.5412,
+    "lng": 9.9758,
+    "sog": 9.5,
+    "uhrzeit": "03:59",
+    "ts": 1795834807819
+  },
+  "BURKANA": {
+    "name": "BURKANA",
+    "ort": "Bei Cuxhaven",
+    "lat": 53.5366,
+    "lng": 8.5779,
+    "sog": 0,
+    "uhrzeit": "03:59",
+    "ts": 1795834807921
+  },
+  "NELLYABICHT": {
+    "name": "NELLY ABICHT",
+    "ort": "Im Hafen.",
+    "lat": 53.5448,
+    "lng": 9.972,
+    "sog": 0,
+    "uhrzeit": "03:59",
+    "ts": 1795834807921
+  },
+  "JANTJE": {
+    "name": "JANTJE",
+    "ort": "Im Hafen.",
+    "lat": 53.5254,
+    "lng": 10.0416,
+    "sog": 0,
+    "uhrzeit": "03:59",
+    "ts": 1795834808499
+  },
+  "HANSESLOP5": {
+    "name": "HANSESLOP 5",
+    "ort": "Im Hafen.",
+    "lat": 53.5186,
+    "lng": 9.9665,
+    "sog": 0,
+    "uhrzeit": "03:59",
+    "ts": 1795834808767
   }
 }
