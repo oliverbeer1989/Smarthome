@@ -2,41 +2,50 @@
   {
     "name": "Judith",
     "laenge": 170,
-    "liegeplatz": "Europakai, HHLA-CTT",
+    "liegeplatz": "HHLA-CTT",
     "imHafen": true,
+    "abgelegt": false,
     "ankunftIso": "2026-11-28",
     "planAnkunft": "03:00",
     "planAnkunftInfo": "28.11. 03:00 Uhr",
     "istAnkunft": "03:00",
     "abfahrtIso": "2026-11-29",
     "planAbfahrtZeit": "03:00",
-    "planAbfahrtInfo": "29.11. 03:00 Uhr (ca.)"
+    "planAbfahrtInfo": "29.11. 03:00 Uhr (ca.)",
+    "istAbfahrt": "",
+    "istAbfahrtInfo": ""
   },
   {
     "name": "San Felix",
     "laenge": 299,
-    "liegeplatz": "Predöhlkai, Eurogate CTH",
+    "liegeplatz": "Hafen Hamburg",
     "imHafen": true,
+    "abgelegt": false,
     "ankunftIso": "2026-11-28",
     "planAnkunft": "06:00",
     "planAnkunftInfo": "28.11. 06:00 Uhr",
     "istAnkunft": "06:00",
     "abfahrtIso": "2026-11-29",
     "planAbfahrtZeit": "06:00",
-    "planAbfahrtInfo": "29.11. 06:00 Uhr (ca.)"
+    "planAbfahrtInfo": "29.11. 06:00 Uhr (ca.)",
+    "istAbfahrt": "",
+    "istAbfahrtInfo": ""
   },
   {
     "name": "MSC Alessia",
     "laenge": 366,
-    "liegeplatz": "Burchardkai, HHLA-CTB",
+    "liegeplatz": "HHLA-CTT",
     "imHafen": true,
+    "abgelegt": false,
     "ankunftIso": "2026-11-28",
     "planAnkunft": "06:30",
     "planAnkunftInfo": "28.11. 06:30 Uhr",
     "istAnkunft": "06:30",
     "abfahrtIso": "2026-11-29",
     "planAbfahrtZeit": "06:30",
-    "planAbfahrtInfo": "29.11. 06:30 Uhr (ca.)"
+    "planAbfahrtInfo": "29.11. 06:30 Uhr (ca.)",
+    "istAbfahrt": "",
+    "istAbfahrtInfo": ""
   },
   {
     "name": "AIDAnova",
@@ -49,7 +58,10 @@
     "istAnkunft": "",
     "abfahrtIso": "2026-11-29",
     "planAbfahrtZeit": "08:00",
-    "planAbfahrtInfo": "29.11. 08:00 Uhr (ca.)"
+    "planAbfahrtInfo": "29.11. 08:00 Uhr (ca.)",
+    "abgelegt": false,
+    "istAbfahrt": "",
+    "istAbfahrtInfo": ""
   },
   {
     "name": "Elbwind",
@@ -62,7 +74,10 @@
     "istAnkunft": "",
     "abfahrtIso": "2026-11-29",
     "planAbfahrtZeit": "10:00",
-    "planAbfahrtInfo": "29.11. 10:00 Uhr (ca.)"
+    "planAbfahrtInfo": "29.11. 10:00 Uhr (ca.)",
+    "abgelegt": false,
+    "istAbfahrt": "",
+    "istAbfahrtInfo": ""
   },
   {
     "name": "Grande Argentina",
@@ -75,7 +90,10 @@
     "istAnkunft": "",
     "abfahrtIso": "2026-11-29",
     "planAbfahrtZeit": "11:00",
-    "planAbfahrtInfo": "29.11. 11:00 Uhr (ca.)"
+    "planAbfahrtInfo": "29.11. 11:00 Uhr (ca.)",
+    "abgelegt": false,
+    "istAbfahrt": "",
+    "istAbfahrtInfo": ""
   },
   {
     "name": "Elbinsel",
@@ -88,7 +106,10 @@
     "istAnkunft": "",
     "abfahrtIso": "2026-11-29",
     "planAbfahrtZeit": "11:00",
-    "planAbfahrtInfo": "29.11. 11:00 Uhr (ca.)"
+    "planAbfahrtInfo": "29.11. 11:00 Uhr (ca.)",
+    "abgelegt": false,
+    "istAbfahrt": "",
+    "istAbfahrtInfo": ""
   },
   {
     "name": "Bulk Prudence",
@@ -101,7 +122,10 @@
     "istAnkunft": "",
     "abfahrtIso": "2026-11-29",
     "planAbfahrtZeit": "14:00",
-    "planAbfahrtInfo": "29.11. 14:00 Uhr (ca.)"
+    "planAbfahrtInfo": "29.11. 14:00 Uhr (ca.)",
+    "abgelegt": false,
+    "istAbfahrt": "",
+    "istAbfahrtInfo": ""
   },
   {
     "name": "OOCL Sweden",
@@ -114,7 +138,10 @@
     "istAnkunft": "",
     "abfahrtIso": "2026-11-29",
     "planAbfahrtZeit": "18:00",
-    "planAbfahrtInfo": "29.11. 18:00 Uhr (ca.)"
+    "planAbfahrtInfo": "29.11. 18:00 Uhr (ca.)",
+    "abgelegt": false,
+    "istAbfahrt": "",
+    "istAbfahrtInfo": ""
   },
   {
     "name": "Juniper Point",
@@ -127,7 +154,10 @@
     "istAnkunft": "",
     "abfahrtIso": "2026-11-29",
     "planAbfahrtZeit": "23:00",
-    "planAbfahrtInfo": "29.11. 23:00 Uhr (ca.)"
+    "planAbfahrtInfo": "29.11. 23:00 Uhr (ca.)",
+    "abgelegt": false,
+    "istAbfahrt": "",
+    "istAbfahrtInfo": ""
   },
   {
     "name": "PL Germany",
@@ -140,6 +170,9 @@
     "istAnkunft": "",
     "abfahrtIso": "2026-11-29",
     "planAbfahrtZeit": "23:00",
-    "planAbfahrtInfo": "29.11. 23:00 Uhr (ca.)"
+    "planAbfahrtInfo": "29.11. 23:00 Uhr (ca.)",
+    "abgelegt": false,
+    "istAbfahrt": "",
+    "istAbfahrtInfo": ""
   }
 ]
