@@ -21,7 +21,7 @@ jobs:
       - name: Playwright installieren
         run: npm install --no-save playwright && npx playwright install chromium
 
-      - name: Hamburger Schiffe inkl. Signal-Zeitstempel & Gestern/Morgen abrufen
+      - name: Hamburger Schiffe (Ein- & Auslaufend) abrufen
         run: |
           cat << 'EOF' > fetch-fracht.mjs
           import { chromium } from 'playwright';
@@ -33,6 +33,22 @@ jobs:
               altDaten = JSON.parse(fs.readFileSync('fracht.json', 'utf8'));
             }
           } catch (e) {}
+
+          let elbeMap = {};
+          try {
+            if (fs.existsSync('elbe-pos.json')) {
+              elbeMap = JSON.parse(fs.readFileSync('elbe-pos.json', 'utf8'));
+            }
+          } catch (e) {}
+
+          const cleanPosKey = (raw) => String(raw || '').replace(/^(?:M\/V|MV|MS|M\/S|CMS)\s+/i, '').replace(/[^A-Z0-9]/gi, '').toUpperCase();
+          const getElbeOrt = (name) => {
+            const k = cleanPosKey(name);
+            if (!k) return '';
+            if (elbeMap[k]?.ort) return elbeMap[k].ort;
+            const mk = Object.keys(elbeMap).find(x => x.includes(k) || k.includes(x));
+            return mk && elbeMap[mk]?.ort ? elbeMap[mk].ort : '';
+          };
 
           const browser = await chromium.launch({ headless: true });
           const context = await browser.newContext({
@@ -69,9 +85,11 @@ jobs:
               let dateInfo = null;
               let liegeplatz = 'Hafen Hamburg';
               let name = '';
+              let isAbfahrtCard = quelleTyp === 'ABFAHRT';
 
               for (let back = 1; back <= 6 && (i - back) >= 0; back++) {
                 const prev = lines.at(i - back);
+                if (/abfahrt|auslaufend|departure/i.test(prev)) isAbfahrtCard = true;
                 const dm = prev.match(/^(\d{1,2})\.?\s+([A-Za-zäöüÄÖÜ]+)\s+(\d{4})\s+(\d{2}:\d{2})(?:\s*\|\s*(.+))?$/i)
                   || prev.match(/^(\d{2})\.(\d{2})\.(\d{4})\s+(\d{2}:\d{2})(?:\s*\|\s*(.+))?$/i);
                 if (dm) {
@@ -107,9 +125,10 @@ jobs:
                 name,
                 laenge,
                 liegeplatz: liegeplatz !== 'Hafen Hamburg' ? liegeplatz : (existing.liegeplatz || 'Hafen Hamburg'),
-                dateInfo: dateInfo || existing.dateInfo || { iso: heuteIso, zeit: jetztUhrzeit, info: `${signalKurz} Uhr` },
+                ankunftInfo: !isAbfahrtCard ? (dateInfo || existing.ankunftInfo) : existing.ankunftInfo,
+                abfahrtInfo: isAbfahrtCard ? (dateInfo || existing.abfahrtInfo) : existing.abfahrtInfo,
                 inHafenListe: existing.inHafenListe || quelleTyp === 'IM_HAFEN',
-                inErwartetListe: existing.inErwartetListe || quelleTyp === 'ERWARTET'
+                isAbfahrt: existing.isAbfahrt || isAbfahrtCard
               });
             }
           };
@@ -133,6 +152,7 @@ jobs:
 
           await loadAllFromUrl('https://hafen-hamburg.de', 'ERWARTET');
           await loadAllFromUrl('https://hafen-hamburg.de', 'IM_HAFEN');
+          await loadAllFromUrl('https://hafen-hamburg.de', 'ABFAHRT');
           await loadAllFromUrl('https://hafen-hamburg.de', 'START');
 
           await browser.close();
@@ -141,7 +161,8 @@ jobs:
 
           for (const [key, cur] of gesammelte.entries()) {
             const alt = altDaten.find(a => a.name && a.name.toLowerCase() === key);
-            const istJetztImHafen = cur.inHafenListe;
+            const elbeOrt = getElbeOrt(cur.name);
+            const istJetztImHafen = cur.inHafenListe || elbeOrt === 'Im Hafen.';
             const warSchonImHafen = Boolean(alt?.imHafen);
 
             let istAnkunft = alt?.istAnkunft || '';
@@ -149,32 +170,33 @@ jobs:
               istAnkunft = `${signalKurz} Uhr (Signal)`;
             }
 
-            const ankIso = alt?.ankunftIso || cur.dateInfo.iso;
-            const planAnk = alt?.planAnkunft || cur.dateInfo.zeit;
-            const planAnkInfo = alt?.planAnkunftInfo || cur.dateInfo.info;
-
-            const ankDate = new Date(`${ankIso}T${planAnk}:00Z`);
+            const ankObj = cur.ankunftInfo || (alt?.ankunftIso ? { iso: alt.ankunftIso, zeit: alt.planAnkunft, info: alt.planAnkunftInfo } : null) || { iso: heuteIso, zeit: jetztUhrzeit, info: `${signalKurz} Uhr` };
+            const ankDate = new Date(`${ankObj.iso}T${ankObj.zeit}:00Z`);
             const estAbfDate = new Date(ankDate.getTime() + 24 * 60 * 60 * 1000);
             const estAbfIso = estAbfDate.toISOString().slice(0, 10);
+
+            const abfObj = cur.abfahrtInfo || (alt?.abfahrtIso && alt?.planAbfahrtZeit ? { iso: alt.abfahrtIso, zeit: alt.planAbfahrtZeit, info: alt.planAbfahrtInfo } : null);
 
             finalList.push({
               name: cur.name,
               laenge: cur.laenge,
               liegeplatz: cur.liegeplatz,
+              richtung: cur.isAbfahrt && !cur.ankunftInfo ? 'ABFAHRT' : 'ANKUNFT',
               imHafen: istJetztImHafen || warSchonImHafen,
               abgelegt: false,
-              ankunftIso: ankIso,
-              planAnkunft: planAnk,
-              planAnkunftInfo: planAnkInfo,
+              ankunftIso: ankObj.iso,
+              planAnkunft: ankObj.zeit,
+              planAnkunftInfo: ankObj.info,
               istAnkunft,
-              abfahrtIso: alt?.abfahrtIso || estAbfIso,
-              planAbfahrtZeit: alt?.planAbfahrtZeit || planAnk,
-              planAbfahrtInfo: alt?.planAbfahrtInfo || `${estAbfIso.slice(8, 10)}.${estAbfIso.slice(5, 7)}. ${planAnk} Uhr (ca.)`,
+              abfahrtIso: abfObj ? abfObj.iso : estAbfIso,
+              planAbfahrtZeit: abfObj ? abfObj.zeit : ankObj.zeit,
+              planAbfahrtInfo: abfObj ? abfObj.info : `${estAbfIso.slice(8, 10)}.${estAbfIso.slice(5, 7)}. ${ankObj.zeit} Uhr (ca.)`,
               istAbfahrt: '',
               istAbfahrtInfo: ''
             });
           }
 
+          // Schiffe aus dem vorherigen Lauf behalten (z.B. Judith!), solange sie noch im Hafen liegen oder gestern/heute abgelegt haben
           for (const alt of altDaten) {
             if (!alt || !alt.name) continue;
             const key = alt.name.toLowerCase();
@@ -182,15 +204,31 @@ jobs:
 
             if (alt.ankunftIso < gesternIso && (!alt.abfahrtIso || alt.abfahrtIso < gesternIso)) continue;
 
-            const wurdeAbgelegt = alt.abgelegt || alt.imHafen;
-            const istAbfZeit = alt.istAbfahrt || (wurdeAbgelegt ? jetztUhrzeit : '');
-            const istAbfInfo = alt.istAbfahrtInfo || (wurdeAbgelegt ? `${signalKurz} Uhr (Signal)` : '');
+            const elbeOrt = getElbeOrt(alt.name);
+            const liegtNochLautAis = elbeOrt === 'Im Hafen.';
+            const faehrtElbeAbwaerts = Boolean(elbeOrt && elbeOrt !== 'Im Hafen.' && elbeOrt !== 'Auf See / Nordsee' && (alt.imHafen || alt.abgelegt));
+
+            const startTs = new Date(`${alt.ankunftIso}T${alt.planAnkunft || '00:00'}:00Z`).getTime();
+            const stundenSeitAnkunft = (now.getTime() - startTs) / (1000 * 60 * 60);
+
+            // Nur auf ABGELEGT setzen, wenn AIS Elbabwärts meldet oder über 24h vergangen sind – NICHT wenn sie nur aus "Erwartete Schiffe" rutscht!
+            const wirklichAbgelegt = !liegtNochLautAis && (alt.abgelegt || faehrtElbeAbwaerts || stundenSeitAnkunft >= 24);
+            const nochImHafen = !wirklichAbgelegt && (liegtNochLautAis || alt.imHafen || stundenSeitAnkunft >= 0);
+
+            let istAnkunft = alt.istAnkunft || '';
+            if (nochImHafen && !istAnkunft) {
+              istAnkunft = `${signalKurz} Uhr (Signal)`;
+            }
+
+            const istAbfZeit = alt.istAbfahrt || (wirklichAbgelegt ? jetztUhrzeit : '');
+            const istAbfInfo = alt.istAbfahrtInfo || (wirklichAbgelegt ? `${signalKurz} Uhr (Signal)` : '');
 
             finalList.push({
               ...alt,
-              imHafen: false,
-              abgelegt: Boolean(wurdeAbgelegt),
-              abfahrtIso: alt.abfahrtIso || heuteIso,
+              imHafen: nochImHafen,
+              abgelegt: Boolean(wirklichAbgelegt),
+              istAnkunft,
+              abfahrtIso: wirklichAbgelegt ? (alt.abfahrtIso || heuteIso) : alt.abfahrtIso,
               istAbfahrt: istAbfZeit,
               istAbfahrtInfo: istAbfInfo
             });
