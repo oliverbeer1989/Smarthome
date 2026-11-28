@@ -1,0 +1,106 @@
+name: Frachtschiffe Hamburg aktualisieren
+
+on:
+  schedule:
+    - cron: '*/30 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  update-fracht:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Playwright & Chromium installieren
+        run: npx playwright install chromium
+
+      - name: HHLA Segelliste abrufen und fracht.json erstellen
+        run: |
+          cat << 'EOF' > fetch-fracht.mjs
+          import { chromium } from 'playwright';
+          import fs from 'fs';
+
+          const browser = await chromium.launch({ headless: true });
+          const page = await browser.newPage({ locale: 'de-DE' });
+
+          await page.goto('https://hhla.de', {
+            waitUntil: 'networkidle',
+            timeout: 60000
+          });
+          await page.waitForTimeout(4000);
+
+          const rows = await page.$$eval('table tr', trs =>
+            trs.map(tr => Array.from(tr.querySelectorAll('th, td')).map(td => td.innerText.replace(/\s+/g, ' ').trim()))
+          );
+
+          await browser.close();
+
+          const year = new Date().toLocaleDateString('sv-SE', { timeZone: 'Europe/Berlin' }).slice(0, 4);
+          const schiffe = [];
+
+          for (const cells of rows) {
+            if (cells.length < 4) continue;
+            const rowText = cells.join(' | ');
+
+            const lenMatch = rowText.match(/\b([1-4]\d{2})(?:[.,]\d+)?\s*m\b/i)
+              || cells.map(c => c.match(/^([1-4]\d{2})(?:[.,]\d+)?$/)).find(Boolean);
+            const laenge = lenMatch ? parseInt(lenMatch[1], 10) : 0;
+            if (laenge < 150) continue;
+
+            const dates = [...rowText.matchAll(/(\d{2})\.(\d{2})\.(?:(\d{4}|\d{2}))?\s+(\d{2}:\d{2})/g)];
+            if (dates.length === 0) continue;
+
+            const name = cells.find(c =>
+              /[A-Za-zÄÖÜ]{3,}/.test(c) &&
+              !/^\d/.test(c) &&
+              !/(CTB|CTA|CTT|Burchard|Altenwerder|Tollerort|Eurogate)/i.test(c)
+            );
+            if (!name) continue;
+
+            const liegeplatz = cells.find(c => /(CTB|CTA|CTT|EGH|Burchard|Altenwerder|Tollerort|Eurogate|Unikai)/i.test(c)) || 'Hafen Hamburg';
+
+            const parseDt = (m) => {
+              const y = m[3] ? (m[3].length === 2 ? '20' + m[3] : m[3]) : year;
+              return {
+                iso: `${y}-${m[2]}-${m[1]}`,
+                zeit: m[4],
+                info: `${m[1]}.${m[2]}. ${m[4]} Uhr`
+              };
+            };
+
+            const ank = parseDt(dates[0]);
+            const abf = dates.length > 1 ? parseDt(dates[1]) : null;
+
+            schiffe.push({
+              name,
+              laenge,
+              liegeplatz,
+              ankunftIso: ank.iso,
+              planAnkunft: ank.zeit,
+              planAnkunftInfo: ank.info,
+              abfahrtIso: abf ? abf.iso : ank.iso,
+              planAbfahrtZeit: abf ? abf.zeit : '',
+              planAbfahrtInfo: abf ? abf.info : ''
+            });
+          }
+
+          fs.writeFileSync('fracht.json', JSON.stringify(schiffe, null, 2));
+          console.log('Gefundene Schiffe ab 150m:', schiffe.length);
+          EOF
+          node fetch-fracht.mjs
+          rm -f fetch-fracht.mjs
+
+      - name: fracht.json in GitHub speichern
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@://github.com"
+          git add fracht.json
+          git diff --staged --quiet || git commit -m "Update fracht.json"
+          git push
