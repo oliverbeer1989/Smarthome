@@ -2,7 +2,7 @@ name: Frachtschiffe Hamburg aktualisieren
 
 on:
   schedule:
-    - cron: '*/30 * * * *'
+    - cron: '*/15 * * * *'
   workflow_dispatch:
 
 permissions:
@@ -21,13 +21,12 @@ jobs:
       - name: Playwright installieren
         run: npm install --no-save playwright && npx playwright install chromium
 
-      - name: Hamburger Schiffe inkl. Echtzeit-Hafenstatus abrufen
+      - name: Hamburger Schiffe inkl. Signal-Zeitstempel & Gestern/Morgen abrufen
         run: |
           cat << 'EOF' > fetch-fracht.mjs
           import { chromium } from 'playwright';
           import fs from 'fs';
 
-          // Bisherige Daten laden, um einmal erkannte Ist-Ankunftszeiten zu behalten
           let altDaten = [];
           try {
             if (fs.existsSync('fracht.json')) {
@@ -50,12 +49,14 @@ jobs:
 
           const now = new Date();
           const heuteIso = now.toLocaleDateString('sv-SE', { timeZone: 'Europe/Berlin' });
+          const heuteDate = new Date(heuteIso + 'T00:00:00Z');
+          const gesternIso = new Date(heuteDate.getTime() - 86400000).toISOString().slice(0, 10);
           const jetztUhrzeit = now.toLocaleTimeString('de-DE', { timeZone: 'Europe/Berlin', hour: '2-digit', minute: '2-digit', hour12: false });
+          const signalKurz = `${heuteIso.slice(8, 10)}.${heuteIso.slice(5, 7)}. ${jetztUhrzeit}`;
 
-          const schiffe = [];
-          const imHafenNamen = new Set();
+          const gesammelte = new Map();
 
-          const parsePageText = (text, isHafenListe) => {
+          const extractCards = (text, quelleTyp) => {
             const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
             for (let i = 0; i < lines.length; i++) {
               const line = lines.at(i);
@@ -100,86 +101,103 @@ jobs:
               }
               if (!name) continue;
 
-              if (isHafenListe) {
-                imHafenNamen.add(name.toLowerCase());
+              const key = name.toLowerCase();
+              const existing = gesammelte.get(key) || {};
+              gesammelte.set(key, {
+                name,
+                laenge,
+                liegeplatz: liegeplatz !== 'Hafen Hamburg' ? liegeplatz : (existing.liegeplatz || 'Hafen Hamburg'),
+                dateInfo: dateInfo || existing.dateInfo || { iso: heuteIso, zeit: jetztUhrzeit, info: `${signalKurz} Uhr` },
+                inHafenListe: existing.inHafenListe || quelleTyp === 'IM_HAFEN',
+                inErwartetListe: existing.inErwartetListe || quelleTyp === 'ERWARTET'
+              });
+            }
+          };
+          const loadAllFromUrl = async (targetUrl, typ) => {
+            try {
+              await page.goto(targetUrl, { waitUntil: 'networkidle', timeout: 45000 });
+              await page.waitForTimeout(2500);
+              await page.locator('button:has-text("Akzeptieren"), button:has-text("Alle akzeptieren")').first().click({ timeout: 1500 }).catch(() => {});
+              for (let step = 0; step < 6; step++) {
+                await page.locator('button:has-text("Mehr"), a:has-text("Mehr laden"), button:has-text("Weitere")').first().click({ timeout: 1000 }).catch(() => {});
+                await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+                await page.waitForTimeout(1000);
               }
-
-              if (!dateInfo) {
-                dateInfo = { iso: heuteIso, zeit: jetztUhrzeit, info: `${heuteIso.slice(8, 10)}.${heuteIso.slice(5, 7)}. ${jetztUhrzeit} Uhr` };
-              }
-
-              const alt = altDaten.find(a => a.name && a.name.toLowerCase() === name.toLowerCase());
-              const schonImHafen = isHafenListe || imHafenNamen.has(name.toLowerCase()) || Boolean(alt?.imHafen);
-
-              let istAnkunft = alt?.istAnkunft || '';
-              if (schonImHafen && !istAnkunft) {
-                istAnkunft = isHafenListe && dateInfo.iso <= heuteIso ? dateInfo.zeit : jetztUhrzeit;
-              }
-
-              const ankDate = new Date(`${dateInfo.iso}T${dateInfo.zeit}:00Z`);
-              const estAbfDate = new Date(ankDate.getTime() + 24 * 60 * 60 * 1000);
-              const estAbfIso = estAbfDate.toISOString().slice(0, 10);
-
-              const existing = schiffe.find(s => s.name.toLowerCase() === name.toLowerCase());
-              if (existing) {
-                if (schonImHafen) {
-                  existing.imHafen = true;
-                  if (!existing.istAnkunft) existing.istAnkunft = istAnkunft;
-                }
-                if (liegeplatz !== 'Hafen Hamburg') existing.liegeplatz = liegeplatz;
-              } else {
-                schiffe.push({
-                  name,
-                  laenge,
-                  liegeplatz,
-                  imHafen: schonImHafen,
-                  ankunftIso: dateInfo.iso,
-                  planAnkunft: dateInfo.zeit,
-                  planAnkunftInfo: dateInfo.info,
-                  istAnkunft,
-                  abfahrtIso: estAbfIso,
-                  planAbfahrtZeit: dateInfo.zeit,
-                  planAbfahrtInfo: `${estAbfIso.slice(8, 10)}.${estAbfIso.slice(5, 7)}. ${dateInfo.zeit} Uhr (ca.)`
-                });
-              }
+              const txt = await page.evaluate(() => document.body.innerText);
+              console.log(typ, targetUrl, '-> Zeichen:', txt.length);
+              extractCards(txt, typ);
+            } catch (e) {
+              console.log('Fehler', targetUrl, e.message);
             }
           };
 
-          // 1. Zuerst "Schiffe im Überblick" (bereits im Hafen liegende Schiffe!) prüfen
-          await page.goto('https://hafen-hamburg.de', { waitUntil: 'domcontentloaded', timeout: 45000 });
-          await page.waitForTimeout(2500);
-          await page.locator('button:has-text("Akzeptieren"), button:has-text("Alle akzeptieren")').first().click({ timeout: 1500 }).catch(() => {});
-
-          const ueberblickLink = page.locator('a:has-text("Schiffe im Überblick")').first();
-          if (await ueberblickLink.count() > 0) {
-            await ueberblickLink.click({ timeout: 5000 }).catch(() => {});
-            await page.waitForTimeout(3500);
-            for (let s = 0; s < 4; s++) {
-              await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
-              await page.waitForTimeout(1000);
-            }
-            parsePageText(await page.evaluate(() => document.body.innerText), true);
-          }
-
-          // 2. Danach "Alle erwarteten Schiffe" prüfen
-          await page.goto('https://hafen-hamburg.de', { waitUntil: 'domcontentloaded', timeout: 45000 });
-          await page.waitForTimeout(2000);
-          parsePageText(await page.evaluate(() => document.body.innerText), false);
-
-          const alleLink = page.locator('a:has-text("Alle erwarteten Schiffe"), a:has-text("Erwartete Schiffe")').first();
-          if (await alleLink.count() > 0) {
-            await alleLink.click({ timeout: 5000 }).catch(() => {});
-            await page.waitForTimeout(3500);
-            for (let s = 0; s < 4; s++) {
-              await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
-              await page.waitForTimeout(1000);
-            }
-            parsePageText(await page.evaluate(() => document.body.innerText), false);
-          }
+          await loadAllFromUrl('https://hafen-hamburg.de', 'ERWARTET');
+          await loadAllFromUrl('https://hafen-hamburg.de', 'IM_HAFEN');
+          await loadAllFromUrl('https://hafen-hamburg.de', 'START');
 
           await browser.close();
-          fs.writeFileSync('fracht.json', JSON.stringify(schiffe, null, 2));
-          console.log('Gesamt:', schiffe.length, 'Davon bereits im Hafen:', schiffe.filter(s => s.imHafen).length);
+
+          const finalList = [];
+
+          for (const [key, cur] of gesammelte.entries()) {
+            const alt = altDaten.find(a => a.name && a.name.toLowerCase() === key);
+            const istJetztImHafen = cur.inHafenListe;
+            const warSchonImHafen = Boolean(alt?.imHafen);
+
+            let istAnkunft = alt?.istAnkunft || '';
+            if (istJetztImHafen && !istAnkunft) {
+              istAnkunft = `${signalKurz} Uhr (Signal)`;
+            }
+
+            const ankIso = alt?.ankunftIso || cur.dateInfo.iso;
+            const planAnk = alt?.planAnkunft || cur.dateInfo.zeit;
+            const planAnkInfo = alt?.planAnkunftInfo || cur.dateInfo.info;
+
+            const ankDate = new Date(`${ankIso}T${planAnk}:00Z`);
+            const estAbfDate = new Date(ankDate.getTime() + 24 * 60 * 60 * 1000);
+            const estAbfIso = estAbfDate.toISOString().slice(0, 10);
+
+            finalList.push({
+              name: cur.name,
+              laenge: cur.laenge,
+              liegeplatz: cur.liegeplatz,
+              imHafen: istJetztImHafen || warSchonImHafen,
+              abgelegt: false,
+              ankunftIso: ankIso,
+              planAnkunft: planAnk,
+              planAnkunftInfo: planAnkInfo,
+              istAnkunft,
+              abfahrtIso: alt?.abfahrtIso || estAbfIso,
+              planAbfahrtZeit: alt?.planAbfahrtZeit || planAnk,
+              planAbfahrtInfo: alt?.planAbfahrtInfo || `${estAbfIso.slice(8, 10)}.${estAbfIso.slice(5, 7)}. ${planAnk} Uhr (ca.)`,
+              istAbfahrt: '',
+              istAbfahrtInfo: ''
+            });
+          }
+
+          for (const alt of altDaten) {
+            if (!alt || !alt.name) continue;
+            const key = alt.name.toLowerCase();
+            if (gesammelte.has(key)) continue;
+
+            if (alt.ankunftIso < gesternIso && (!alt.abfahrtIso || alt.abfahrtIso < gesternIso)) continue;
+
+            const wurdeAbgelegt = alt.abgelegt || alt.imHafen;
+            const istAbfZeit = alt.istAbfahrt || (wurdeAbgelegt ? jetztUhrzeit : '');
+            const istAbfInfo = alt.istAbfahrtInfo || (wurdeAbgelegt ? `${signalKurz} Uhr (Signal)` : '');
+
+            finalList.push({
+              ...alt,
+              imHafen: false,
+              abgelegt: Boolean(wurdeAbgelegt),
+              abfahrtIso: alt.abfahrtIso || heuteIso,
+              istAbfahrt: istAbfZeit,
+              istAbfahrtInfo: istAbfInfo
+            });
+          }
+
+          fs.writeFileSync('fracht.json', JSON.stringify(finalList, null, 2));
+          console.log('Gesamt:', finalList.length, 'Im Hafen:', finalList.filter(s => s.imHafen).length, 'Abgelegt:', finalList.filter(s => s.abgelegt).length);
           EOF
           node fetch-fracht.mjs
           rm -f fetch-fracht.mjs
