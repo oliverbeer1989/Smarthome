@@ -21,82 +21,88 @@ jobs:
       - name: Playwright installieren
         run: npm install --no-save playwright && npx playwright install chromium
 
-      - name: HHLA Segelliste abrufen und fracht.json erstellen
+      - name: Hamburger Schiffe abrufen und fracht.json erstellen
         run: |
           cat << 'EOF' > fetch-fracht.mjs
           import { chromium } from 'playwright';
           import fs from 'fs';
 
           const browser = await chromium.launch({ headless: true });
-          const page = await browser.newPage({ locale: 'de-DE' });
-
-          await page.goto('https://hhla.de', {
-            waitUntil: 'networkidle',
-            timeout: 60000
+          const context = await browser.newContext({
+            locale: 'de-DE',
+            userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36'
           });
-          await page.waitForTimeout(4000);
-
-          const rows = await page.$$eval('table tr', trs =>
-            trs.map(tr => Array.from(tr.querySelectorAll('th, td')).map(td => td.innerText.replace(/\s+/g, ' ').trim()))
-          );
-
-          await browser.close();
+          const page = await context.newPage();
 
           const year = new Date().toLocaleDateString('sv-SE', { timeZone: 'Europe/Berlin' }).slice(0, 4);
           const schiffe = [];
 
-          for (const cells of rows) {
-            if (cells.length < 4) continue;
-            const rowText = cells.join(' | ');
+          // Quelle 1: Offizielle Hafen Hamburg Schiffsliste (inkl. Länge, Ankunft, Abfahrt & Terminal)
+          try {
+            await page.goto('https://hafen-hamburg.de', { waitUntil: 'networkidle', timeout: 60000 });
+            await page.waitForTimeout(3000);
+            await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+            await page.waitForTimeout(2000);
 
-            const lenMatch = rowText.match(/\b([1-4]\d{2})(?:[.,]\d+)?\s*m\b/i)
-              || cells.map(c => c.match(/^([1-4]\d{2})(?:[.,]\d+)?$/)).find(Boolean);
-            const laenge = lenMatch ? parseInt(lenMatch.at(1), 10) : 0;
-            if (laenge < 150) continue;
+            const bodyText = await page.evaluate(() => document.body.innerText);
+            const lines = bodyText.split('\n').map(l => l.trim()).filter(Boolean);
+            console.log('Hafen-Hamburg Zeilen:', lines.length);
 
-            const dates = [...rowText.matchAll(/(\d{2})\.(\d{2})\.(?:(\d{4}|\d{2}))?\s+(\d{2}:\d{2})/g)];
-            if (dates.length === 0) continue;
+            for (let i = 0; i < lines.length; i++) {
+              const line = lines.at(i);
+              const lenMatch = line.match(/\b([1-4]\d{2})(?:[.,]\d+)?\s*m\b/i);
+              if (!lenMatch) continue;
+              const laenge = parseInt(lenMatch.at(1), 10);
+              if (laenge < 150) continue;
 
-            const name = cells.find(c =>
-              /[A-Za-zÄÖÜ]{3,}/.test(c) &&
-              !/^\d/.test(c) &&
-              !/(CTB|CTA|CTT|Burchard|Altenwerder|Tollerort|Eurogate)/i.test(c)
-            );
-            if (!name) continue;
+              const block = lines.slice(Math.max(0, i - 4), Math.min(lines.length, i + 6)).join(' | ');
+              const dates = [...block.matchAll(/(\d{2})\.(\d{2})\.(?:(\d{4}|\d{2}))?\s*,?\s*(\d{2}:\d{2})/g)];
+              if (dates.length === 0) continue;
 
-            const liegeplatz = cells.find(c => /(CTB|CTA|CTT|EGH|Burchard|Altenwerder|Tollerort|Eurogate|Unikai)/i.test(c)) || 'Hafen Hamburg';
+              const name = lines.slice(Math.max(0, i - 4), i + 1).find(l =>
+                /^[A-ZÄÖÜ0-9\s\-\.\(\)\/]{3,40}$/.test(l) &&
+                !/^\d/.test(l) &&
+                !/\b\d{3}\s*m\b/i.test(l) &&
+                !/(ANKUNFT|ABFAHRT|TERMINAL|LÄNGE|SCHIFF|CONTAINER)/i.test(l)
+              );
+              if (!name) continue;
 
-            const parseDt = (m) => {
-              const d = m.at(1);
-              const mo = m.at(2);
-              const yRaw = m.at(3);
-              const z = m.at(4);
-              const y = yRaw ? (yRaw.length === 2 ? '20' + yRaw : yRaw) : year;
-              return {
-                iso: `${y}-${mo}-${d}`,
-                zeit: z,
-                info: `${d}.${mo}. ${z} Uhr`
+              const lpMatch = block.match(/(Burchardkai|Altenwerder|Tollerort|Eurogate|O'Swaldkai|Steinwerder|Hansaport|Unikai|Wallmann|Athabaskakai|Predöhlkai|Bukarestkai|Dradenau|Waltershof|Kattwyk|C\.?\s*Steinweg)/i);
+              const liegeplatz = lpMatch ? lpMatch.at(1) : 'Hafen Hamburg';
+
+              const parseDt = (m) => {
+                const d = m.at(1);
+                const mo = m.at(2);
+                const yRaw = m.at(3);
+                const z = m.at(4);
+                const y = yRaw ? (yRaw.length === 2 ? '20' + yRaw : yRaw) : year;
+                return { iso: `${y}-${mo}-${d}`, zeit: z, info: `${d}.${mo}. ${z} Uhr` };
               };
-            };
 
-            const ank = parseDt(dates.at(0));
-            const abf = dates.length > 1 ? parseDt(dates.at(1)) : null;
+              const ank = parseDt(dates.at(0));
+              const abf = dates.length > 1 ? parseDt(dates.at(1)) : null;
 
-            schiffe.push({
-              name,
-              laenge,
-              liegeplatz,
-              ankunftIso: ank.iso,
-              planAnkunft: ank.zeit,
-              planAnkunftInfo: ank.info,
-              abfahrtIso: abf ? abf.iso : ank.iso,
-              planAbfahrtZeit: abf ? abf.zeit : '',
-              planAbfahrtInfo: abf ? abf.info : ''
-            });
+              if (!schiffe.some(s => s.name === name && s.ankunftIso === ank.iso)) {
+                schiffe.push({
+                  name,
+                  laenge,
+                  liegeplatz,
+                  ankunftIso: ank.iso,
+                  planAnkunft: ank.zeit,
+                  planAnkunftInfo: ank.info,
+                  abfahrtIso: abf ? abf.iso : ank.iso,
+                  planAbfahrtZeit: abf ? abf.zeit : '',
+                  planAbfahrtInfo: abf ? abf.info : ''
+                });
+              }
+            }
+          } catch (e) {
+            console.log('Hafen-Hamburg Fehler:', e.message);
           }
 
+          await browser.close();
           fs.writeFileSync('fracht.json', JSON.stringify(schiffe, null, 2));
-          console.log('Tabellenzeilen:', rows.length, 'Gefundene Schiffe ab 150m:', schiffe.length);
+          console.log('Gespeicherte Schiffe ab 150m:', schiffe.length);
           EOF
           node fetch-fracht.mjs
           rm -f fetch-fracht.mjs
