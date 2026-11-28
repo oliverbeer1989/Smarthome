@@ -72,7 +72,7 @@ jobs:
 
           const gesammelte = new Map();
 
-          const extractCards = (text, quelleTyp) => {
+          const extractCards = (text, isAbfahrtDefault) => {
             const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
             for (let i = 0; i < lines.length; i++) {
               const line = lines.at(i);
@@ -85,7 +85,7 @@ jobs:
               let dateInfo = null;
               let liegeplatz = 'Hafen Hamburg';
               let name = '';
-              let isAbfahrtCard = quelleTyp === 'ABFAHRT';
+              let isAbfahrtCard = isAbfahrtDefault;
 
               for (let back = 1; back <= 6 && (i - back) >= 0; back++) {
                 const prev = lines.at(i - back);
@@ -127,33 +127,31 @@ jobs:
                 liegeplatz: liegeplatz !== 'Hafen Hamburg' ? liegeplatz : (existing.liegeplatz || 'Hafen Hamburg'),
                 ankunftInfo: !isAbfahrtCard ? (dateInfo || existing.ankunftInfo) : existing.ankunftInfo,
                 abfahrtInfo: isAbfahrtCard ? (dateInfo || existing.abfahrtInfo) : existing.abfahrtInfo,
-                inHafenListe: existing.inHafenListe || quelleTyp === 'IM_HAFEN',
                 isAbfahrt: existing.isAbfahrt || isAbfahrtCard
               });
             }
           };
-          const loadAllFromUrl = async (targetUrl, typ) => {
+          const loadAllFromUrl = async (targetUrl, isAbfahrtDefault) => {
             try {
-              await page.goto(targetUrl, { waitUntil: 'networkidle', timeout: 45000 });
-              await page.waitForTimeout(2500);
+              await page.goto(targetUrl, { waitUntil: 'domcontentloaded', timeout: 45000 });
+              await page.waitForTimeout(3000);
               await page.locator('button:has-text("Akzeptieren"), button:has-text("Alle akzeptieren")').first().click({ timeout: 1500 }).catch(() => {});
-              for (let step = 0; step < 6; step++) {
-                await page.locator('button:has-text("Mehr"), a:has-text("Mehr laden"), button:has-text("Weitere")').first().click({ timeout: 1000 }).catch(() => {});
+              for (let step = 0; step < 5; step++) {
                 await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
                 await page.waitForTimeout(1000);
               }
               const txt = await page.evaluate(() => document.body.innerText);
-              console.log(typ, targetUrl, '-> Zeichen:', txt.length);
-              extractCards(txt, typ);
+              console.log(targetUrl, '-> Zeichen:', txt.length);
+              extractCards(txt, isAbfahrtDefault);
             } catch (e) {
               console.log('Fehler', targetUrl, e.message);
             }
           };
 
-          await loadAllFromUrl('https://hafen-hamburg.de', 'ERWARTET');
-          await loadAllFromUrl('https://hafen-hamburg.de', 'IM_HAFEN');
-          await loadAllFromUrl('https://hafen-hamburg.de', 'ABFAHRT');
-          await loadAllFromUrl('https://hafen-hamburg.de', 'START');
+          await loadAllFromUrl('https://hafen-hamburg.de', false);
+          await loadAllFromUrl('https://hafen-hamburg.de', false);
+          await loadAllFromUrl('https://hafen-hamburg.de', true);
+          await loadAllFromUrl('https://hafen-hamburg.de', false);
 
           await browser.close();
 
@@ -162,7 +160,13 @@ jobs:
           for (const [key, cur] of gesammelte.entries()) {
             const alt = altDaten.find(a => a.name && a.name.toLowerCase() === key);
             const elbeOrt = getElbeOrt(cur.name);
-            const istJetztImHafen = cur.inHafenListe || elbeOrt === 'Im Hafen.';
+
+            const ankObj = cur.ankunftInfo || (alt?.ankunftIso ? { iso: alt.ankunftIso, zeit: alt.planAnkunft, info: alt.planAnkunftInfo } : null) || { iso: heuteIso, zeit: jetztUhrzeit, info: `${signalKurz} Uhr` };
+            const ankTs = new Date(`${ankObj.iso}T${ankObj.zeit}:00`).getTime();
+            const planZeitErreicht = !Number.isNaN(ankTs) && now.getTime() >= ankTs;
+
+            // Nur wenn AIS wirklich "Im Hafen." meldet oder die Plan-Ankunftszeit erreicht ist!
+            const istJetztImHafen = elbeOrt === 'Im Hafen.' || planZeitErreicht;
             const warSchonImHafen = Boolean(alt?.imHafen);
 
             let istAnkunft = alt?.istAnkunft || '';
@@ -170,7 +174,6 @@ jobs:
               istAnkunft = `${signalKurz} Uhr (Signal)`;
             }
 
-            const ankObj = cur.ankunftInfo || (alt?.ankunftIso ? { iso: alt.ankunftIso, zeit: alt.planAnkunft, info: alt.planAnkunftInfo } : null) || { iso: heuteIso, zeit: jetztUhrzeit, info: `${signalKurz} Uhr` };
             const ankDate = new Date(`${ankObj.iso}T${ankObj.zeit}:00Z`);
             const estAbfDate = new Date(ankDate.getTime() + 24 * 60 * 60 * 1000);
             const estAbfIso = estAbfDate.toISOString().slice(0, 10);
@@ -196,7 +199,6 @@ jobs:
             });
           }
 
-          // Schiffe aus dem vorherigen Lauf behalten (z.B. Judith!), solange sie noch im Hafen liegen oder gestern/heute abgelegt haben
           for (const alt of altDaten) {
             if (!alt || !alt.name) continue;
             const key = alt.name.toLowerCase();
@@ -211,7 +213,6 @@ jobs:
             const startTs = new Date(`${alt.ankunftIso}T${alt.planAnkunft || '00:00'}:00Z`).getTime();
             const stundenSeitAnkunft = (now.getTime() - startTs) / (1000 * 60 * 60);
 
-            // Nur auf ABGELEGT setzen, wenn AIS Elbabwärts meldet oder über 24h vergangen sind – NICHT wenn sie nur aus "Erwartete Schiffe" rutscht!
             const wirklichAbgelegt = !liegtNochLautAis && (alt.abgelegt || faehrtElbeAbwaerts || stundenSeitAnkunft >= 24);
             const nochImHafen = !wirklichAbgelegt && (liegtNochLautAis || alt.imHafen || stundenSeitAnkunft >= 0);
 
