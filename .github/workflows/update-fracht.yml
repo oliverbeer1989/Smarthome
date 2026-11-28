@@ -18,8 +18,8 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Playwright & Chromium installieren
-        run: npx playwright install chromium
+      - name: Playwright installieren
+        run: npm install --no-save playwright && npx playwright install chromium
 
       - name: HHLA Segelliste abrufen und fracht.json erstellen
         run: |
@@ -51,7 +51,7 @@ jobs:
 
             const lenMatch = rowText.match(/\b([1-4]\d{2})(?:[.,]\d+)?\s*m\b/i)
               || cells.map(c => c.match(/^([1-4]\d{2})(?:[.,]\d+)?$/)).find(Boolean);
-            const laenge = lenMatch ? parseInt(lenMatch[1], 10) : 0;
+            const laenge = lenMatch ? parseInt(lenMatch.at(1), 10) : 0;
             if (laenge < 150) continue;
 
             const dates = [...rowText.matchAll(/(\d{2})\.(\d{2})\.(?:(\d{4}|\d{2}))?\s+(\d{2}:\d{2})/g)];
@@ -67,16 +67,20 @@ jobs:
             const liegeplatz = cells.find(c => /(CTB|CTA|CTT|EGH|Burchard|Altenwerder|Tollerort|Eurogate|Unikai)/i.test(c)) || 'Hafen Hamburg';
 
             const parseDt = (m) => {
-              const y = m[3] ? (m[3].length === 2 ? '20' + m[3] : m[3]) : year;
+              const d = m.at(1);
+              const mo = m.at(2);
+              const yRaw = m.at(3);
+              const z = m.at(4);
+              const y = yRaw ? (yRaw.length === 2 ? '20' + yRaw : yRaw) : year;
               return {
-                iso: `${y}-${m[2]}-${m[1]}`,
-                zeit: m[4],
-                info: `${m[1]}.${m[2]}. ${m[4]} Uhr`
+                iso: `${y}-${mo}-${d}`,
+                zeit: z,
+                info: `${d}.${mo}. ${z} Uhr`
               };
             };
 
-            const ank = parseDt(dates[0]);
-            const abf = dates.length > 1 ? parseDt(dates[1]) : null;
+            const ank = parseDt(dates.at(0));
+            const abf = dates.length > 1 ? parseDt(dates.at(1)) : null;
 
             schiffe.push({
               name,
@@ -92,7 +96,7 @@ jobs:
           }
 
           fs.writeFileSync('fracht.json', JSON.stringify(schiffe, null, 2));
-          console.log('Gefundene Schiffe ab 150m:', schiffe.length);
+          console.log('Tabellenzeilen:', rows.length, 'Gefundene Schiffe ab 150m:', schiffe.length);
           EOF
           node fetch-fracht.mjs
           rm -f fetch-fracht.mjs
