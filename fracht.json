@@ -34,5 +34,101 @@
     "abfahrtIso": "2026-11-29",
     "planAbfahrtZeit": "06:30",
     "planAbfahrtInfo": "29.11. 06:30 Uhr (ca.)"
+  },
+  {
+    "name": "AIDAnova",
+    "laenge": 337,
+    "liegeplatz": "Kronprinzkai, Cruise Center Steinwerder",
+    "ankunftIso": "2026-11-28",
+    "planAnkunft": "08:00",
+    "planAnkunftInfo": "28.11. 08:00 Uhr",
+    "istAnkunft": "",
+    "abfahrtIso": "2026-11-29",
+    "planAbfahrtZeit": "08:00",
+    "planAbfahrtInfo": "29.11. 08:00 Uhr (ca.)"
+  },
+  {
+    "name": "Elbwind",
+    "laenge": 151,
+    "liegeplatz": "Burchardkai, HHLA-CTB",
+    "ankunftIso": "2026-11-28",
+    "planAnkunft": "10:00",
+    "planAnkunftInfo": "28.11. 10:00 Uhr",
+    "istAnkunft": "",
+    "abfahrtIso": "2026-11-29",
+    "planAbfahrtZeit": "10:00",
+    "planAbfahrtInfo": "29.11. 10:00 Uhr (ca.)"
+  },
+  {
+    "name": "Grande Argentina",
+    "laenge": 214,
+    "liegeplatz": "O'swaldkai 2-6, HHLA-Frucht",
+    "ankunftIso": "2026-11-28",
+    "planAnkunft": "11:00",
+    "planAnkunftInfo": "28.11. 11:00 Uhr",
+    "istAnkunft": "",
+    "abfahrtIso": "2026-11-29",
+    "planAbfahrtZeit": "11:00",
+    "planAbfahrtInfo": "29.11. 11:00 Uhr (ca.)"
+  },
+  {
+    "name": "Elbinsel",
+    "laenge": 170,
+    "liegeplatz": "Europakai, HHLA-CTT",
+    "ankunftIso": "2026-11-28",
+    "planAnkunft": "11:00",
+    "planAnkunftInfo": "28.11. 11:00 Uhr",
+    "istAnkunft": "",
+    "abfahrtIso": "2026-11-29",
+    "planAbfahrtZeit": "11:00",
+    "planAbfahrtInfo": "29.11. 11:00 Uhr (ca.)"
+  },
+  {
+    "name": "Bulk Prudence",
+    "laenge": 199,
+    "liegeplatz": "Salzgitterkai, Hansaport",
+    "ankunftIso": "2026-11-28",
+    "planAnkunft": "14:00",
+    "planAnkunftInfo": "28.11. 14:00 Uhr",
+    "istAnkunft": "",
+    "abfahrtIso": "2026-11-29",
+    "planAbfahrtZeit": "14:00",
+    "planAbfahrtInfo": "29.11. 14:00 Uhr (ca.)"
+  },
+  {
+    "name": "OOCL Sweden",
+    "laenge": 399,
+    "liegeplatz": "Europakai, HHLA-CTT",
+    "ankunftIso": "2026-11-28",
+    "planAnkunft": "18:00",
+    "planAnkunftInfo": "28.11. 18:00 Uhr",
+    "istAnkunft": "",
+    "abfahrtIso": "2026-11-29",
+    "planAbfahrtZeit": "18:00",
+    "planAbfahrtInfo": "29.11. 18:00 Uhr (ca.)"
+  },
+  {
+    "name": "Juniper Point",
+    "laenge": 199,
+    "liegeplatz": "Kalikai, -",
+    "ankunftIso": "2026-11-28",
+    "planAnkunft": "23:00",
+    "planAnkunftInfo": "28.11. 23:00 Uhr",
+    "istAnkunft": "",
+    "abfahrtIso": "2026-11-29",
+    "planAbfahrtZeit": "23:00",
+    "planAbfahrtInfo": "29.11. 23:00 Uhr (ca.)"
+  },
+  {
+    "name": "PL Germany",
+    "laenge": 279,
+    "liegeplatz": "Ballinkai, HHLA-CTA",
+    "ankunftIso": "2026-11-28",
+    "planAnkunft": "23:00",
+    "planAnkunftInfo": "28.11. 23:00 Uhr",
+    "istAnkunft": "",
+    "abfahrtIso": "2026-11-29",
+    "planAbfahrtZeit": "23:00",
+    "planAbfahrtInfo": "29.11. 23:00 Uhr (ca.)"
   }
 ]
