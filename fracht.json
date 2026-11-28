@@ -21,8 +21,8 @@
     "laenge": 366,
     "liegeplatz": "HHLA-CTT",
     "richtung": "ANKUNFT",
-    "imHafen": true,
-    "abgelegt": false,
+    "imHafen": false,
+    "abgelegt": true,
     "ankunftIso": "2026-11-28",
     "planAnkunft": "06:30",
     "planAnkunftInfo": "28.11. 06:30 Uhr",
@@ -30,8 +30,8 @@
     "abfahrtIso": "2026-11-28",
     "planAbfahrtZeit": "06:30",
     "planAbfahrtInfo": "28.11. 06:30 Uhr",
-    "istAbfahrt": "",
-    "istAbfahrtInfo": ""
+    "istAbfahrt": "06:28",
+    "istAbfahrtInfo": "28.11. 06:28 Uhr (Signal)"
   },
   {
     "name": "AIDAnova",
