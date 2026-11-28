@@ -137,11 +137,11 @@
   "ALEX": {
     "name": "ALEX",
     "ort": "Im Hafen.",
-    "lat": 53.5455,
-    "lng": 9.9684,
+    "lat": 53.5197,
+    "lng": 9.9698,
     "sog": 0,
-    "uhrzeit": "03:59",
-    "ts": 1795834779775
+    "uhrzeit": "04:13",
+    "ts": 1795835641584
   },
   "LEVENSAU": {
     "name": "LEVENSAU",
@@ -185,8 +185,8 @@
     "lat": 53.521,
     "lng": 9.968,
     "sog": 0,
-    "uhrzeit": "03:59",
-    "ts": 1795834783193
+    "uhrzeit": "04:13",
+    "ts": 1795835634550
   },
   "RIVERSTAR": {
     "name": "RIVER STAR",
@@ -239,8 +239,8 @@
     "lat": 53.5044,
     "lng": 9.9578,
     "sog": 0,
-    "uhrzeit": "03:59",
-    "ts": 1795834787916
+    "uhrzeit": "04:13",
+    "ts": 1795835636353
   },
   "MEINSCHIFF3": {
     "name": "MEIN SCHIFF 3",
@@ -356,8 +356,8 @@
     "lat": 53.5249,
     "lng": 10.0429,
     "sog": 0,
-    "uhrzeit": "03:59",
-    "ts": 1795834793059
+    "uhrzeit": "04:13",
+    "ts": 1795835635392
   },
   "HEGEMANNV": {
     "name": "HEGEMANN V",
@@ -374,8 +374,8 @@
     "lat": 53.9112,
     "lng": 9.1795,
     "sog": 0,
-    "uhrzeit": "03:59",
-    "ts": 1795834794460
+    "uhrzeit": "04:13",
+    "ts": 1795835635392
   },
   "WALTERDEYMANN": {
     "name": "WALTER DEYMANN",
@@ -383,8 +383,8 @@
     "lat": 53.5248,
     "lng": 9.8897,
     "sog": 0,
-    "uhrzeit": "03:59",
-    "ts": 1795834795101
+    "uhrzeit": "04:13",
+    "ts": 1795835645666
   },
   "CLARAK": {
     "name": "CLARA K",
@@ -527,8 +527,8 @@
     "lat": 53.5448,
     "lng": 9.972,
     "sog": 0,
-    "uhrzeit": "03:59",
-    "ts": 1795834807921
+    "uhrzeit": "04:13",
+    "ts": 1795835647386
   },
   "JANTJE": {
     "name": "JANTJE",
@@ -543,9 +543,351 @@
     "name": "HANSESLOP 5",
     "ort": "Im Hafen.",
     "lat": 53.5186,
-    "lng": 9.9665,
+    "lng": 9.9664,
     "sog": 0,
-    "uhrzeit": "03:59",
-    "ts": 1795834808767
+    "uhrzeit": "04:13",
+    "ts": 1795835650157
+  },
+  "HAFENCITY": {
+    "name": "HAFENCITY",
+    "ort": "Vor Teufelsbrück / Finkenwerder",
+    "lat": 53.5363,
+    "lng": 9.871,
+    "sog": 0,
+    "uhrzeit": "04:13",
+    "ts": 1795835623151
+  },
+  "REMFORTRESS": {
+    "name": "REM FORTRESS",
+    "ort": "Bei Cuxhaven",
+    "lat": 53.875,
+    "lng": 8.7073,
+    "sog": 0,
+    "uhrzeit": "04:13",
+    "ts": 1795835623258
+  },
+  "REINHARDWOLTMAN": {
+    "name": "REINHARD WOLTMAN",
+    "ort": "Im Hafen.",
+    "lat": 53.5257,
+    "lng": 10.0029,
+    "sog": 0,
+    "uhrzeit": "04:13",
+    "ts": 1795835623562
+  },
+  "WS31": {
+    "name": "WS31",
+    "ort": "Im Hafen.",
+    "lat": 53.4736,
+    "lng": 9.988,
+    "sog": 0,
+    "uhrzeit": "04:13",
+    "ts": 1795835623754
+  },
+  "ANNELIESEKRAMER": {
+    "name": "ANNELIESE KRAMER",
+    "ort": "Bei Cuxhaven",
+    "lat": 53.8767,
+    "lng": 8.6983,
+    "sog": 0,
+    "uhrzeit": "04:13",
+    "ts": 1795835624153
+  },
+  "WALTER": {
+    "name": "WALTER",
+    "ort": "Im Hafen.",
+    "lat": 53.5338,
+    "lng": 9.974,
+    "sog": 0,
+    "uhrzeit": "04:13",
+    "ts": 1795835624543
+  },
+  "VBPROMPT": {
+    "name": "VB PROMPT",
+    "ort": "Im Hafen.",
+    "lat": 53.5258,
+    "lng": 9.9268,
+    "sog": 0.1,
+    "uhrzeit": "04:13",
+    "ts": 1795835624690
+  },
+  "OHRE": {
+    "name": "OHRE",
+    "ort": "Im Hafen.",
+    "lat": 53.4749,
+    "lng": 9.977,
+    "sog": 0,
+    "uhrzeit": "04:13",
+    "ts": 1795835624691
+  },
+  "VBMERCURY": {
+    "name": "VB MERCURY",
+    "ort": "Im Hafen.",
+    "lat": 53.5433,
+    "lng": 9.9182,
+    "sog": 0,
+    "uhrzeit": "04:13",
+    "ts": 1795835625927
+  },
+  "ATTILA": {
+    "name": "ATTILA",
+    "ort": "Im Hafen.",
+    "lat": 53.4696,
+    "lng": 9.9887,
+    "sog": 0,
+    "uhrzeit": "04:13",
+    "ts": 1795835625927
+  },
+  "VBPERFECT": {
+    "name": "VB PERFECT",
+    "ort": "Im Hafen.",
+    "lat": 53.5432,
+    "lng": 9.9229,
+    "sog": 0,
+    "uhrzeit": "04:13",
+    "ts": 1795835627262
+  },
+  "FAIRPLAY99": {
+    "name": "FAIRPLAY-99",
+    "ort": "Im Hafen.",
+    "lat": 53.5306,
+    "lng": 9.9377,
+    "sog": 8.4,
+    "uhrzeit": "04:13",
+    "ts": 1795835627857
+  },
+  "TK14": {
+    "name": "TK14",
+    "ort": "Im Hafen.",
+    "lat": 53.5217,
+    "lng": 9.9546,
+    "sog": 0,
+    "uhrzeit": "04:13",
+    "ts": 1795835628489
+  },
+  "AIDANOVA": {
+    "name": "AIDANOVA",
+    "ort": "Vor Teufelsbrück / Finkenwerder",
+    "lat": 53.5418,
+    "lng": 9.8905,
+    "sog": 9.7,
+    "uhrzeit": "04:13",
+    "ts": 1795835651555
+  },
+  "TIGER": {
+    "name": "TIGER",
+    "ort": "Im Hafen.",
+    "lat": 53.5215,
+    "lng": 9.9683,
+    "sog": 0,
+    "uhrzeit": "04:13",
+    "ts": 1795835628623
+  },
+  "MEDEM": {
+    "name": "MEDEM",
+    "ort": "Bei Cuxhaven",
+    "lat": 53.8714,
+    "lng": 8.7114,
+    "sog": 7.5,
+    "uhrzeit": "04:13",
+    "ts": 1795835630046
+  },
+  "SABINE": {
+    "name": "SABINE",
+    "ort": "Im Hafen.",
+    "lat": 53.5455,
+    "lng": 9.9657,
+    "sog": 0,
+    "uhrzeit": "04:13",
+    "ts": 1795835632638
+  },
+  "WILSONRUHR": {
+    "name": "WILSON  RUHR",
+    "ort": "Auf See / Nordsee",
+    "lat": 53.6372,
+    "lng": 8.4331,
+    "sog": 8.6,
+    "uhrzeit": "04:13",
+    "ts": 1795835633095
+  },
+  "FAIRPLAY67": {
+    "name": "FAIRPLAY-67",
+    "ort": "Vor Brunsbüttel (NOK)",
+    "lat": 53.8906,
+    "lng": 9.1447,
+    "sog": 0,
+    "uhrzeit": "04:13",
+    "ts": 1795835633498
+  },
+  "SCHWINGEFLAIR": {
+    "name": "SCHWINGEFLAIR",
+    "ort": "Vor Stade / Stadersand",
+    "lat": 53.6034,
+    "lng": 9.4788,
+    "sog": 0,
+    "uhrzeit": "04:13",
+    "ts": 1795835633807
+  },
+  "NORDLAND": {
+    "name": "NORDLAND",
+    "ort": "Bei Cuxhaven",
+    "lat": 53.9349,
+    "lng": 8.6616,
+    "sog": 9.9,
+    "uhrzeit": "04:13",
+    "ts": 1795835633807
+  },
+  "LR6": {
+    "name": "L & R 6",
+    "ort": "Im Hafen.",
+    "lat": 53.5234,
+    "lng": 9.9289,
+    "sog": 0,
+    "uhrzeit": "04:13",
+    "ts": 1795835633982
+  },
+  "RODIE2": {
+    "name": "RODIE 2",
+    "ort": "Im Hafen.",
+    "lat": 53.5432,
+    "lng": 9.9204,
+    "sog": 0,
+    "uhrzeit": "04:13",
+    "ts": 1795835635392
+  },
+  "GULFPETROLEUM4": {
+    "name": "GULF PETROLEUM 4",
+    "ort": "Auf See / Nordsee",
+    "lat": 53.9814,
+    "lng": 8.4071,
+    "sog": 9.1,
+    "uhrzeit": "04:13",
+    "ts": 1795835636353
+  },
+  "MSCTAKORADIVIII": {
+    "name": "MSC TAKORADI VIII",
+    "ort": "Auf See / Nordsee",
+    "lat": 53.6972,
+    "lng": 8.3373,
+    "sog": 13.8,
+    "uhrzeit": "04:13",
+    "ts": 1795835651433
+  },
+  "VISURGIS": {
+    "name": "VISURGIS",
+    "ort": "Auf See / Nordsee",
+    "lat": 53.5681,
+    "lng": 8.5487,
+    "sog": 0,
+    "uhrzeit": "04:13",
+    "ts": 1795835638200
+  },
+  "VBRESOLUT": {
+    "name": "VB RESOLUT",
+    "ort": "Im Hafen.",
+    "lat": 53.5431,
+    "lng": 9.9202,
+    "sog": 0,
+    "uhrzeit": "04:13",
+    "ts": 1795835639180
+  },
+  "HMMCOPENHAGEN": {
+    "name": "HMM COPENHAGEN",
+    "ort": "Im Hafen.",
+    "lat": 53.5335,
+    "lng": 9.911,
+    "sog": 0,
+    "uhrzeit": "04:13",
+    "ts": 1795835641198
+  },
+  "RAINERABICHT": {
+    "name": "RAINER ABICHT",
+    "ort": "Im Hafen.",
+    "lat": 53.545,
+    "lng": 9.9715,
+    "sog": 0,
+    "uhrzeit": "04:13",
+    "ts": 1795835641584
+  },
+  "BURAN": {
+    "name": "BURAN",
+    "ort": "Im Hafen.",
+    "lat": 53.5269,
+    "lng": 10.058,
+    "sog": 0,
+    "uhrzeit": "04:13",
+    "ts": 1795835642549
+  },
+  "TANJADEYMANNI": {
+    "name": "TANJA DEYMANN I",
+    "ort": "Im Hafen.",
+    "lat": 53.4574,
+    "lng": 10.0631,
+    "sog": 9.1,
+    "uhrzeit": "04:13",
+    "ts": 1795835645036
+  },
+  "VBSPIRIT": {
+    "name": "VB SPIRIT",
+    "ort": "Im Hafen.",
+    "lat": 53.5433,
+    "lng": 9.9187,
+    "sog": 0,
+    "uhrzeit": "04:13",
+    "ts": 1795835645821
+  },
+  "BRGMBRAUER": {
+    "name": "BRGM BRAUER",
+    "ort": "Bei Cuxhaven",
+    "lat": 53.8621,
+    "lng": 8.7098,
+    "sog": 0,
+    "uhrzeit": "04:13",
+    "ts": 1795835646009
+  },
+  "KEHDINGEN": {
+    "name": "KEHDINGEN",
+    "ort": "Vor Brunsbüttel (NOK)",
+    "lat": 53.8898,
+    "lng": 9.1453,
+    "sog": 0,
+    "uhrzeit": "04:13",
+    "ts": 1795835647386
+  },
+  "HYDROGRAF": {
+    "name": "HYDROGRAF",
+    "ort": "Bei Cuxhaven",
+    "lat": 53.8582,
+    "lng": 8.7187,
+    "sog": 0,
+    "uhrzeit": "04:13",
+    "ts": 1795835647981
+  },
+  "CARLW": {
+    "name": "CARL W",
+    "ort": "Im Hafen.",
+    "lat": 53.5311,
+    "lng": 9.9674,
+    "sog": 0,
+    "uhrzeit": "04:13",
+    "ts": 1795835648590
+  },
+  "HANSA": {
+    "name": "HANSA",
+    "ort": "Bei Cuxhaven",
+    "lat": 53.5454,
+    "lng": 8.5718,
+    "sog": 0,
+    "uhrzeit": "04:13",
+    "ts": 1795835650254
+  },
+  "QUANTUM": {
+    "name": "QUANTUM",
+    "ort": "Im Hafen.",
+    "lat": 53.533,
+    "lng": 9.9629,
+    "sog": 0,
+    "uhrzeit": "04:13",
+    "ts": 1795835652380
   }
 }
