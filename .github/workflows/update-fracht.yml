@@ -133,10 +133,11 @@ jobs:
           };
           const loadAllFromUrl = async (targetUrl, isAbfahrtDefault) => {
             try {
-              await page.goto(targetUrl, { waitUntil: 'domcontentloaded', timeout: 45000 });
-              await page.waitForTimeout(3000);
+              await page.goto(targetUrl, { waitUntil: 'networkidle', timeout: 45000 });
+              await page.waitForTimeout(2500);
               await page.locator('button:has-text("Akzeptieren"), button:has-text("Alle akzeptieren")').first().click({ timeout: 1500 }).catch(() => {});
-              for (let step = 0; step < 5; step++) {
+              for (let step = 0; step < 6; step++) {
+                await page.locator('button:has-text("Mehr"), a:has-text("Mehr laden"), button:has-text("Weitere")').first().click({ timeout: 1000 }).catch(() => {});
                 await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
                 await page.waitForTimeout(1000);
               }
@@ -165,7 +166,6 @@ jobs:
             const ankTs = new Date(`${ankObj.iso}T${ankObj.zeit}:00`).getTime();
             const planZeitErreicht = !Number.isNaN(ankTs) && now.getTime() >= ankTs;
 
-            // Nur wenn AIS wirklich "Im Hafen." meldet oder die Plan-Ankunftszeit erreicht ist!
             const istJetztImHafen = elbeOrt === 'Im Hafen.' || planZeitErreicht;
             const warSchonImHafen = Boolean(alt?.imHafen);
 
