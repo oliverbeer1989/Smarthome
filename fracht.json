@@ -1,22 +1,5 @@
 [
   {
-    "name": "Bulk Prudence",
-    "laenge": 199,
-    "liegeplatz": "Hafen Hamburg",
-    "richtung": "ANKUNFT",
-    "imHafen": false,
-    "abgelegt": false,
-    "ankunftIso": "2026-11-28",
-    "planAnkunft": "14:00",
-    "planAnkunftInfo": "28.11. 14:00 Uhr",
-    "istAnkunft": "",
-    "abfahrtIso": "2026-11-29",
-    "planAbfahrtZeit": "14:00",
-    "planAbfahrtInfo": "29.11. 14:00 Uhr (ca.)",
-    "istAbfahrt": "",
-    "istAbfahrtInfo": ""
-  },
-  {
     "name": "Judith",
     "laenge": 170,
     "liegeplatz": "Cruise Center Steinwerder",
@@ -30,6 +13,23 @@
     "abfahrtIso": "2026-11-29",
     "planAbfahrtZeit": "17:30",
     "planAbfahrtInfo": "29.11. 17:30 Uhr (ca.)",
+    "istAbfahrt": "",
+    "istAbfahrtInfo": ""
+  },
+  {
+    "name": "Bulk Prudence",
+    "laenge": 199,
+    "liegeplatz": "Hafen Hamburg",
+    "richtung": "ANKUNFT",
+    "imHafen": false,
+    "abgelegt": false,
+    "ankunftIso": "2026-11-28",
+    "planAnkunft": "14:00",
+    "planAnkunftInfo": "28.11. 14:00 Uhr",
+    "istAnkunft": "",
+    "abfahrtIso": "2026-11-29",
+    "planAbfahrtZeit": "14:00",
+    "planAbfahrtInfo": "29.11. 14:00 Uhr (ca.)",
     "istAbfahrt": "",
     "istAbfahrtInfo": ""
   },
