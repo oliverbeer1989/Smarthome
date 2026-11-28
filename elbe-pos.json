@@ -1,0 +1,128 @@
+{
+  "NINGBOEXPRESS": {
+    "name": "NINGBO EXPRESS",
+    "ort": "Im Hafen.",
+    "lat": 53.5035,
+    "lng": 9.9377,
+    "sog": 0,
+    "uhrzeit": "03:13",
+    "ts": 1795832025685
+  },
+  "BALLINSTADT": {
+    "name": "BALLINSTADT",
+    "ort": "Im Hafen.",
+    "lat": 53.5456,
+    "lng": 9.9642,
+    "sog": 0,
+    "uhrzeit": "03:13",
+    "ts": 1795832026210
+  },
+  "GRASBROOK": {
+    "name": "GRASBROOK",
+    "ort": "Im Hafen.",
+    "lat": 53.5452,
+    "lng": 9.9584,
+    "sog": 0,
+    "uhrzeit": "03:13",
+    "ts": 1795832026210
+  },
+  "LOTSE1": {
+    "name": "LOTSE 1",
+    "ort": "Vor Teufelsbrück / Finkenwerder",
+    "lat": 53.5393,
+    "lng": 9.8813,
+    "sog": 0,
+    "uhrzeit": "03:13",
+    "ts": 1795832026737
+  },
+  "SERVICE": {
+    "name": "SERVICE",
+    "ort": "Im Hafen.",
+    "lat": 53.5181,
+    "lng": 9.9666,
+    "sog": 0,
+    "uhrzeit": "03:13",
+    "ts": 1795832027647
+  },
+  "TRISCHEN": {
+    "name": "TRISCHEN",
+    "ort": "Vor Brunsbüttel (NOK)",
+    "lat": 53.8952,
+    "lng": 9.1269,
+    "sog": 0,
+    "uhrzeit": "03:13",
+    "ts": 1795832027647
+  },
+  "KAY": {
+    "name": "KAY",
+    "ort": "Im Hafen.",
+    "lat": 53.5184,
+    "lng": 9.9666,
+    "sog": 0,
+    "uhrzeit": "03:13",
+    "ts": 1795832027892
+  },
+  "VBPIONEER": {
+    "name": "VB PIONEER",
+    "ort": "Bei Cuxhaven",
+    "lat": 53.5763,
+    "lng": 8.5589,
+    "sog": 0,
+    "uhrzeit": "03:13",
+    "ts": 1795832028127
+  },
+  "SK42VERTRAUEN": {
+    "name": "SK42 VERTRAUEN",
+    "ort": "Bei Cuxhaven",
+    "lat": 53.8614,
+    "lng": 8.7109,
+    "sog": 0,
+    "uhrzeit": "03:13",
+    "ts": 1795832028677
+  },
+  "FAIRPLAY51": {
+    "name": "FAIRPLAY-51",
+    "ort": "Vor Stade / Stadersand",
+    "lat": 53.6527,
+    "lng": 9.5107,
+    "sog": 0,
+    "uhrzeit": "03:13",
+    "ts": 1795832028678
+  },
+  "BOXER": {
+    "name": "BOXER",
+    "ort": "Im Hafen.",
+    "lat": 53.5248,
+    "lng": 9.9408,
+    "sog": 0,
+    "uhrzeit": "03:13",
+    "ts": 1795832029168
+  },
+  "METTEMARIA": {
+    "name": "METTE MARIA",
+    "ort": "Vor Brunsbüttel (NOK)",
+    "lat": 53.8936,
+    "lng": 9.151,
+    "sog": 0,
+    "uhrzeit": "03:13",
+    "ts": 1795832030680
+  },
+  "FRYA": {
+    "name": "FRYA",
+    "ort": "Auf See / Nordsee",
+    "lat": 53.5678,
+    "lng": 8.5487,
+    "sog": 0.2,
+    "uhrzeit": "03:13",
+    "ts": 1795832030680
+  },
+  "COASTALLIBERTY": {
+    "name": "COASTAL LIBERTY",
+    "ort": "Bei Cuxhaven",
+    "lat": 53.8542,
+    "lng": 8.7226,
+    "sog": 0,
+    "uhrzeit": "03:13",
+    "ts": 1795832030981
+  }
+}
