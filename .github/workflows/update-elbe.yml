@@ -18,7 +18,7 @@ jobs:
         with:
           node-version: '20'
 
-      - name: AIS-Positionen auf der Elbe abrufen (45s)
+      - name: AIS-Positionen auf der Elbe abrufen (45s + MMSI-Cache)
         env:
           AIS_KEY: ${{ secrets.AISSTREAM_API_KEY }}
         run: |
@@ -40,6 +40,39 @@ jobs:
             process.exit(0);
           }
 
+          // Feste MMSI-Zuordnung für Hamburger Kreuzfahrtschiffe + dauerhafter MMSI-Cache
+          const knownMmsi = {
+            '247389200': 'AIDANOVA',
+            '247389100': 'AIDACOSMA',
+            '247353800': 'AIDAPRIMA',
+            '247353900': 'AIDAPERLA',
+            '211191000': 'AIDALUNA',
+            '247312900': 'AIDAMAR',
+            '247329200': 'AIDASOL',
+            '247272500': 'AIDABELLA',
+            '247228500': 'AIDADIVA',
+            '355906000': 'MSC PREZIOSA',
+            '248332000': 'MSC EURIBIA',
+            '215628000': 'MEIN SCHIFF 1',
+            '215631000': 'MEIN SCHIFF 2',
+            '249053000': 'MEIN SCHIFF 3',
+            '248136000': 'MEIN SCHIFF 4',
+            '248312000': 'MEIN SCHIFF 5',
+            '248441000': 'MEIN SCHIFF 6',
+            '256742000': 'MEIN SCHIFF 7',
+            '235103359': 'QUEEN MARY 2',
+            '232052796': 'QUEEN ANNE',
+            '211210280': 'AMADEA',
+            '311000849': 'AMERA',
+            '311000608': 'ARTANIA',
+            '311000994': 'HANSEATIC NATURE',
+            '311000995': 'HANSEATIC INSPIRATION',
+            '311001053': 'HANSEATIC SPIRIT',
+            '257825000': 'FINNMARKEN',
+            '257115000': 'MIDNATSOL',
+            ...(alt._mmsiCache || {})
+          };
+
           const waypoints = [
             { name: 'Elbmündung / Scharhörn', lat: 53.95, lng: 8.45 },
             { name: 'Bei Cuxhaven', lat: 53.87, lng: 8.70 },
@@ -58,7 +91,7 @@ jobs:
 
           const getElbeOrt = (lat, lng, sog) => {
             if (lng < 8.55) return 'Auf See / Nordsee';
-            if (lng >= 9.91 && lat >= 53.48 && lat <= 53.56 && (sog === undefined || sog < 2.5)) {
+            if (lng >= 9.90 && lat >= 53.48 && lat <= 53.56 && (sog === undefined || sog < 2.5)) {
               return 'Im Hafen.';
             }
             let best = waypoints.at(0);
@@ -83,6 +116,7 @@ jobs:
           const jetztStr = new Date().toLocaleTimeString('de-DE', { timeZone: 'Europe/Berlin', hour: '2-digit', minute: '2-digit', hour12: false });
 
           for (const [k, v] of Object.entries(alt)) {
+            if (k === '_mmsiCache') continue;
             if (v && v.ts && (now - v.ts) < 90 * 60 * 1000) {
               live[k] = v;
             }
@@ -99,11 +133,9 @@ jobs:
               ws.send(JSON.stringify({
                 APIKey: apiKey,
                 BoundingBoxes: [[[53.45, 8.20], [54.05, 10.10]]],
-                FilterMessageTypes: ['PositionReport', 'ShipStaticData']
+                FilterMessageTypes: ['PositionReport', 'ShipStaticData', 'StandardClassBPositionReport', 'ExtendedClassBPositionReport']
               }));
             });
-
-            const mmsiNames = {};
 
             ws.on('message', (raw) => {
               try {
@@ -111,16 +143,19 @@ jobs:
                 const meta = msg.MetaData || {};
                 const mmsi = String(meta.MMSI || '');
                 const shipName = (meta.ShipName || msg.Message?.ShipStaticData?.Name || '').trim();
-                if (mmsi && shipName) mmsiNames[mmsi] = shipName;
+                if (mmsi && shipName) {
+                  knownMmsi[mmsi] = shipName;
+                }
 
-                const nameToUse = shipName || mmsiNames[mmsi];
-                const pos = msg.Message?.PositionReport;
+                const nameToUse = shipName || knownMmsi[mmsi];
+                const pos = msg.Message?.PositionReport || msg.Message?.StandardClassBPositionReport || msg.Message?.ExtendedClassBPositionReport;
                 if (nameToUse && pos && typeof pos.Latitude === 'number' && typeof pos.Longitude === 'number') {
                   const key = cleanKey(nameToUse);
                   if (key.length >= 3) {
                     const ort = getElbeOrt(pos.Latitude, pos.Longitude, pos.Sog);
                     live[key] = {
                       name: nameToUse,
+                      mmsi,
                       ort,
                       lat: Number(pos.Latitude.toFixed(4)),
                       lng: Number(pos.Longitude.toFixed(4)),
@@ -139,8 +174,9 @@ jobs:
             });
           });
 
+          live._mmsiCache = knownMmsi;
           fs.writeFileSync('elbe-pos.json', JSON.stringify(live, null, 2));
-          console.log('Erfasste Schiffe auf der Unterelbe:', Object.keys(live).length);
+          console.log('Erfasste Schiffe auf der Unterelbe:', Object.keys(live).length - 1);
           EOF
           node fetch-elbe.mjs
           rm -f fetch-elbe.mjs
