@@ -131,11 +131,6 @@ jobs:
               });
             }
           };
-          const urlsToLoad = [
-            'https://hafen-hamburg.de',
-            'https://hafen-hamburg.de?schiffe=169804&kreuzfahrt-segelliste=169806'
-          ];
-
           const expandAndExtract = async (isAbfDefault) => {
             for (let step = 0; step < 15; step++) {
               const clicked = await page.locator('button:has-text("Mehr"), a:has-text("Mehr laden"), button:has-text("Weitere")')
@@ -151,35 +146,47 @@ jobs:
             extractCards(txt, isAbfDefault);
           };
 
-          for (const targetUrl of urlsToLoad) {
+          const searchUrls = [
+            'https://hafen-hamburg.de',
+            'https://hafen-hamburg.de?schiffe=169804&kreuzfahrt-segelliste=169806'
+          ];
+
+          for (const targetUrl of searchUrls) {
             try {
               await page.goto(targetUrl, { waitUntil: 'domcontentloaded', timeout: 45000 }).catch(() => {});
               await page.waitForTimeout(3000);
               await page.locator('button:has-text("Akzeptieren"), button:has-text("Alle akzeptieren")').first().click({ timeout: 1500 }).catch(() => {});
               await expandAndExtract(false);
 
-              // Alle Select-Dropdowns (z.B. Richtung: Ankunft / Abfahrt / Alle) durchwählen
+              // Im Suchformular gezielt auf "Abfahrt" / "Abfahrende" umschalten und Such-Button absenden
+              const abfToggle = page.locator('label:has-text("Abfahrt"), label:has-text("Abfahrende"), input[value*="abfahrt" i], input[value*="departure" i]').first();
+              if (await abfToggle.count() > 0) {
+                await abfToggle.click({ timeout: 2000, force: true }).catch(() => {});
+                await page.waitForTimeout(800);
+                const submitBtn = page.locator('button[type="submit"], input[type="submit"], button:has-text("Suchen"), button:has-text("Anzeigen"), button:has-text("Filtern")').first();
+                if (await submitBtn.count() > 0) {
+                  await submitBtn.click({ timeout: 2000, force: true }).catch(() => {});
+                }
+                await page.waitForTimeout(3000);
+                await expandAndExtract(true);
+              }
+
+              // Falls ein Select-Dropdown für Richtung existiert, ebenfalls "Abfahrt" wählen & absenden
               const selects = await page.locator('select').all();
               for (const sel of selects) {
                 const opts = await sel.locator('option').all();
                 for (const opt of opts) {
                   const val = await opt.getAttribute('value').catch(() => null);
                   const lbl = (await opt.innerText().catch(() => '')).trim();
-                  if (!val && !lbl) continue;
-                  const isAbf = /abfahr|auslauf|depart/i.test(lbl);
-                  await sel.selectOption(val || { label: lbl }).catch(() => {});
-                  await page.waitForTimeout(2000);
-                  await expandAndExtract(isAbf);
-                }
-              }
-
-              // Zusätzlich Radio-/Tab-Labels ("Abfahrende", "Auslaufende", "Im Hafen") anklicken
-              for (const labelTxt of ['Abfahrende', 'Auslaufende', 'Im Hafen']) {
-                const btn = page.locator(`label:has-text("${labelTxt}"), button:has-text("${labelTxt}"), a:has-text("${labelTxt}")`).first();
-                if (await btn.count() > 0) {
-                  await btn.click({ timeout: 1500, force: true }).catch(() => {});
-                  await page.waitForTimeout(2000);
-                  await expandAndExtract(/abfahr|auslauf/i.test(labelTxt));
+                  if (/abfahr|auslauf|depart/i.test(lbl) || /abfahr|auslauf|depart/i.test(val || '')) {
+                    await sel.selectOption(val || { label: lbl }).catch(() => {});
+                    const submitBtn = page.locator('button[type="submit"], input[type="submit"], button:has-text("Suchen"), button:has-text("Anzeigen")').first();
+                    if (await submitBtn.count() > 0) {
+                      await submitBtn.click({ timeout: 2000, force: true }).catch(() => {});
+                    }
+                    await page.waitForTimeout(3000);
+                    await expandAndExtract(true);
+                  }
                 }
               }
             } catch (e) {
@@ -214,18 +221,19 @@ jobs:
             const estAbfIso = estAbfDate.toISOString().slice(0, 10);
 
             const abfObj = cur.abfahrtInfo || (alt?.abfahrtIso && alt?.planAbfahrtZeit ? { iso: alt.abfahrtIso, zeit: alt.planAbfahrtZeit, info: alt.planAbfahrtInfo } : null);
+            const nurAbfahrt = Boolean(cur.isAbfahrt && !cur.ankunftInfo);
 
             finalList.push({
               name: cur.name,
               laenge: cur.laenge,
               liegeplatz: cur.liegeplatz,
-              richtung: cur.isAbfahrt && !cur.ankunftInfo ? 'ABFAHRT' : 'ANKUNFT',
-              imHafen: istJetztImHafen || warSchonImHafen,
+              richtung: nurAbfahrt ? 'ABFAHRT' : 'ANKUNFT',
+              imHafen: nurAbfahrt ? true : (istJetztImHafen || warSchonImHafen),
               abgelegt: false,
-              ankunftIso: ankObj.iso,
-              planAnkunft: ankObj.zeit,
-              planAnkunftInfo: ankObj.info,
-              istAnkunft,
+              ankunftIso: nurAbfahrt ? gesternIso : ankObj.iso,
+              planAnkunft: nurAbfahrt ? '—' : ankObj.zeit,
+              planAnkunftInfo: nurAbfahrt ? 'Im Hafen' : ankObj.info,
+              istAnkunft: nurAbfahrt ? '' : istAnkunft,
               abfahrtIso: abfObj ? abfObj.iso : estAbfIso,
               planAbfahrtZeit: abfObj ? abfObj.zeit : ankObj.zeit,
               planAbfahrtInfo: abfObj ? abfObj.info : `${estAbfIso.slice(8, 10)}.${estAbfIso.slice(5, 7)}. ${ankObj.zeit} Uhr (ca.)`,
