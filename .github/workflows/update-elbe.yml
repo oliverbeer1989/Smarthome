@@ -18,7 +18,7 @@ jobs:
         with:
           node-version: '20'
 
-      - name: AIS-Positionen auf der Elbe abrufen (75s + MMSI-Cache)
+      - name: AIS-Positionen auf der Elbe abrufen (75s + Länge & Kurs)
         env:
           AIS_KEY: ${{ secrets.AISSTREAM_API_KEY }}
         run: |
@@ -72,6 +72,10 @@ jobs:
             ...(alt._mmsiCache || {})
           };
 
+          const knownLength = {
+            ...(alt._lengthCache || {})
+          };
+
           const waypoints = [
             { name: 'Elbmündung / Scharhörn', lat: 53.95, lng: 8.45 },
             { name: 'Bei Cuxhaven', lat: 53.87, lng: 8.70 },
@@ -90,7 +94,7 @@ jobs:
 
           const getElbeOrt = (lat, lng, sog) => {
             if (lng < 8.55) return 'Auf See / Nordsee';
-            if (lng >= 9.90 && lat >= 53.48 && lat <= 53.56 && (sog === undefined || sog < 2.5)) {
+            if (lng >= 9.89 && lat >= 53.48 && lat <= 53.56 && (sog === undefined || sog < 2.5)) {
               return 'Im Hafen.';
             }
             let best = waypoints.at(0);
@@ -115,7 +119,7 @@ jobs:
           const jetztStr = new Date().toLocaleTimeString('de-DE', { timeZone: 'Europe/Berlin', hour: '2-digit', minute: '2-digit', hour12: false });
 
           for (const [k, v] of Object.entries(alt)) {
-            if (k === '_mmsiCache') continue;
+            if (k === '_mmsiCache' || k === '_lengthCache') continue;
             if (v && v.ts && (now - v.ts) < 90 * 60 * 1000) {
               live[k] = v;
             }
@@ -141,9 +145,14 @@ jobs:
                 const msg = JSON.parse(raw.toString());
                 const meta = msg.MetaData || {};
                 const mmsi = String(meta.MMSI || '');
-                const shipName = (meta.ShipName || msg.Message?.ShipStaticData?.Name || '').trim();
+                const stat = msg.Message?.ShipStaticData;
+                const shipName = (meta.ShipName || stat?.Name || '').trim();
                 if (mmsi && shipName) {
                   knownMmsi[mmsi] = shipName;
+                }
+                if (mmsi && stat?.Dimension) {
+                  const len = Number(stat.Dimension.A || 0) + Number(stat.Dimension.B || 0);
+                  if (len >= 50) knownLength[mmsi] = len;
                 }
 
                 const nameToUse = shipName || knownMmsi[mmsi];
@@ -152,13 +161,16 @@ jobs:
                   const key = cleanKey(nameToUse);
                   if (key.length >= 3) {
                     const ort = getElbeOrt(pos.Latitude, pos.Longitude, pos.Sog);
+                    const len = knownLength[mmsi] || live[key]?.laenge || null;
                     live[key] = {
                       name: nameToUse,
                       mmsi,
+                      laenge: len,
                       ort,
                       lat: Number(pos.Latitude.toFixed(4)),
                       lng: Number(pos.Longitude.toFixed(4)),
                       sog: typeof pos.Sog === 'number' ? Number(pos.Sog.toFixed(1)) : null,
+                      cog: typeof pos.Cog === 'number' ? Math.round(pos.Cog) : null,
                       uhrzeit: jetztStr,
                       ts: Date.now()
                     };
@@ -174,8 +186,9 @@ jobs:
           });
 
           live._mmsiCache = knownMmsi;
+          live._lengthCache = knownLength;
           fs.writeFileSync('elbe-pos.json', JSON.stringify(live, null, 2));
-          console.log('Erfasste Schiffe auf der Unterelbe:', Object.keys(live).length - 1);
+          console.log('Erfasste Schiffe auf der Unterelbe:', Object.keys(live).length - 2);
           EOF
           node fetch-elbe.mjs
           rm -f fetch-elbe.mjs
