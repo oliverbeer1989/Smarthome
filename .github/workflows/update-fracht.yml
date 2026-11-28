@@ -42,12 +42,12 @@ jobs:
           } catch (e) {}
 
           const cleanPosKey = (raw) => String(raw || '').replace(/^(?:M\/V|MV|MS|M\/S|CMS)\s+/i, '').replace(/[^A-Z0-9]/gi, '').toUpperCase();
-          const getElbeOrt = (name) => {
+          const getElbeInfo = (name) => {
             const k = cleanPosKey(name);
-            if (!k) return '';
-            if (elbeMap[k]?.ort) return elbeMap[k].ort;
-            const mk = Object.keys(elbeMap).find(x => x.includes(k) || k.includes(x));
-            return mk && elbeMap[mk]?.ort ? elbeMap[mk].ort : '';
+            if (!k) return null;
+            if (elbeMap[k]) return elbeMap[k];
+            const mk = Object.keys(elbeMap).find(x => x !== '_mmsiCache' && (x.includes(k) || k.includes(x)));
+            return mk ? elbeMap[mk] : null;
           };
 
           const browser = await chromium.launch({ headless: true });
@@ -136,19 +136,52 @@ jobs:
             'https://hafen-hamburg.de?schiffe=169804&kreuzfahrt-segelliste=169806'
           ];
 
+          const expandAndExtract = async (isAbfDefault) => {
+            for (let step = 0; step < 15; step++) {
+              const clicked = await page.locator('button:has-text("Mehr"), a:has-text("Mehr laden"), button:has-text("Weitere")')
+                .first()
+                .click({ timeout: 1000, force: true })
+                .then(() => true)
+                .catch(() => false);
+              await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+              await page.waitForTimeout(clicked ? 1400 : 500);
+              if (!clicked && step >= 2) break;
+            }
+            const txt = await page.evaluate(() => document.body.innerText);
+            extractCards(txt, isAbfDefault);
+          };
+
           for (const targetUrl of urlsToLoad) {
             try {
               await page.goto(targetUrl, { waitUntil: 'domcontentloaded', timeout: 45000 }).catch(() => {});
               await page.waitForTimeout(3000);
               await page.locator('button:has-text("Akzeptieren"), button:has-text("Alle akzeptieren")').first().click({ timeout: 1500 }).catch(() => {});
-              for (let step = 0; step < 8; step++) {
-                const clicked = await page.locator('button:has-text("Mehr"), a:has-text("Mehr laden"), button:has-text("Weitere")').first().click({ timeout: 1000, force: true }).then(() => true).catch(() => false);
-                await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
-                await page.waitForTimeout(clicked ? 1500 : 800);
+              await expandAndExtract(false);
+
+              // Alle Select-Dropdowns (z.B. Richtung: Ankunft / Abfahrt / Alle) durchwählen
+              const selects = await page.locator('select').all();
+              for (const sel of selects) {
+                const opts = await sel.locator('option').all();
+                for (const opt of opts) {
+                  const val = await opt.getAttribute('value').catch(() => null);
+                  const lbl = (await opt.innerText().catch(() => '')).trim();
+                  if (!val && !lbl) continue;
+                  const isAbf = /abfahr|auslauf|depart/i.test(lbl);
+                  await sel.selectOption(val || { label: lbl }).catch(() => {});
+                  await page.waitForTimeout(2000);
+                  await expandAndExtract(isAbf);
+                }
               }
-              const txt = await page.evaluate(() => document.body.innerText);
-              console.log(targetUrl, '-> Zeichen:', txt.length);
-              extractCards(txt, false);
+
+              // Zusätzlich Radio-/Tab-Labels ("Abfahrende", "Auslaufende", "Im Hafen") anklicken
+              for (const labelTxt of ['Abfahrende', 'Auslaufende', 'Im Hafen']) {
+                const btn = page.locator(`label:has-text("${labelTxt}"), button:has-text("${labelTxt}"), a:has-text("${labelTxt}")`).first();
+                if (await btn.count() > 0) {
+                  await btn.click({ timeout: 1500, force: true }).catch(() => {});
+                  await page.waitForTimeout(2000);
+                  await expandAndExtract(/abfahr|auslauf/i.test(labelTxt));
+                }
+              }
             } catch (e) {
               console.log('Hinweis', targetUrl, e.message);
             }
@@ -160,7 +193,8 @@ jobs:
 
           for (const [key, cur] of gesammelte.entries()) {
             const alt = altDaten.find(a => a.name && a.name.toLowerCase() === key);
-            const elbeOrt = getElbeOrt(cur.name);
+            const elbe = getElbeInfo(cur.name);
+            const elbeOrt = elbe?.ort || '';
 
             const ankObj = cur.ankunftInfo || (alt?.ankunftIso ? { iso: alt.ankunftIso, zeit: alt.planAnkunft, info: alt.planAnkunftInfo } : null) || { iso: heuteIso, zeit: jetztUhrzeit, info: `${signalKurz} Uhr` };
             const ankTs = new Date(`${ankObj.iso}T${ankObj.zeit}:00`).getTime();
@@ -171,7 +205,8 @@ jobs:
 
             let istAnkunft = alt?.istAnkunft || '';
             if (istJetztImHafen && !istAnkunft) {
-              istAnkunft = `${signalKurz} Uhr (Signal)`;
+              const sigZeit = elbe?.uhrzeit || jetztUhrzeit;
+              istAnkunft = `${heuteIso.slice(8, 10)}.${heuteIso.slice(5, 7)}. ${sigZeit} Uhr (Signal)`;
             }
 
             const ankDate = new Date(`${ankObj.iso}T${ankObj.zeit}:00Z`);
@@ -206,7 +241,8 @@ jobs:
 
             if (alt.ankunftIso < gesternIso && (!alt.abfahrtIso || alt.abfahrtIso < gesternIso)) continue;
 
-            const elbeOrt = getElbeOrt(alt.name);
+            const elbe = getElbeInfo(alt.name);
+            const elbeOrt = elbe?.ort || '';
             const liegtNochLautAis = elbeOrt === 'Im Hafen.';
             const faehrtElbeAbwaerts = Boolean(elbeOrt && elbeOrt !== 'Im Hafen.' && elbeOrt !== 'Auf See / Nordsee' && (alt.imHafen || alt.abgelegt));
 
@@ -218,11 +254,12 @@ jobs:
 
             let istAnkunft = alt.istAnkunft || '';
             if (nochImHafen && !istAnkunft) {
-              istAnkunft = `${signalKurz} Uhr (Signal)`;
+              const sigZeit = elbe?.uhrzeit || jetztUhrzeit;
+              istAnkunft = `${heuteIso.slice(8, 10)}.${heuteIso.slice(5, 7)}. ${sigZeit} Uhr (Signal)`;
             }
 
-            const istAbfZeit = alt.istAbfahrt || (wirklichAbgelegt ? jetztUhrzeit : '');
-            const istAbfInfo = alt.istAbfahrtInfo || (wirklichAbgelegt ? `${signalKurz} Uhr (Signal)` : '');
+            const istAbfZeit = alt.istAbfahrt || (wirklichAbgelegt ? (elbe?.uhrzeit || jetztUhrzeit) : '');
+            const istAbfInfo = alt.istAbfahrtInfo || (wirklichAbgelegt ? `${heuteIso.slice(8, 10)}.${heuteIso.slice(5, 7)}. ${istAbfZeit} Uhr (Signal)` : '');
 
             finalList.push({
               ...alt,
